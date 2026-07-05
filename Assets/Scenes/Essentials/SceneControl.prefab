@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6526335802051396319
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7301079542867772128}
+  - component: {fileID: 2181676391070568691}
+  - component: {fileID: 1195013164691643540}
+  m_Layer: 0
+  m_Name: SceneControl
+  m_TagString: SceneManager
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7301079542867772128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6526335802051396319}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -23.737848, y: -27.771109, z: -31.305763}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2181676391070568691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6526335802051396319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8457dec7284538e47a424e15a21624a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BirthParticle: {fileID: 0}
+  Buttons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  StartPos: {x: -41.1, y: -42.5}
+  FinisPos: {x: 724.22, y: -42.5}
+  TotalDistance: 0
+  CurrentDistance: 0
+  BackCurrentDistance: 0
+  minCurrentDistance: 0
+  PercentSlider: {fileID: 0}
+  Percent: {fileID: 0}
+  textvalue: 0
+  Difference: 0
+  lastDif: 0
+  nowdif: 0
+  isPressStopButton: 0
+  respawnPoint: {fileID: 0}
+  player: {fileID: 0}
+  LostPanel: {fileID: 0}
+  WinPanel: {fileID: 0}
+  StopPanel: {fileID: 0}
+  isbackpressHomeButton: 0
+  isRespawn: 0
+  isRespawnOver: 0
+  WaitEffectTime: 2
+  WaitScene: 2
+--- !u!114 &1195013164691643540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6526335802051396319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7b94b0bec00364eb2a2c499f70834f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isPlay: 0
+  isPressHome: 0
