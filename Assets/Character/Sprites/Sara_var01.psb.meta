@@ -9102,28 +9102,6 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 4, y: 3703}
     spritePosition: {x: 860, y: 873}
-  - name: Layer 10
-    originalName: 
-    pivot: {x: 0.5, y: 0.5}
-    alignment: 0
-    border: {x: 0, y: 0, z: 0, w: 0}
-    customData: 
-    rect:
-      serializedVersion: 2
-      x: 517
-      y: 4010
-      width: 0
-      height: 0
-    spriteID: c5d4ee7138c653a4691b0c87e6ac3124
-    spriteBone: []
-    spriteOutline: []
-    vertices: []
-    spritePhysicsOutline: []
-    indices: 
-    edges: []
-    tessellationDetail: 0
-    uvTransform: {x: 517, y: 4010}
-    spritePosition: {x: 0, y: 2000}
   - name: arm_L
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -19892,7 +19870,7 @@ ScriptedImporter:
     layerID: 3582
     mosaicPosition: {x: 517, y: 4010}
     flatten: 0
-    isImported: 1
+    isImported: 0
     isVisible: 1
   - name: arm_L
     spriteName: arm_L
