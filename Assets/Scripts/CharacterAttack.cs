@@ -1,102 +1,91 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class CharacterAttack : MonoBehaviour
 {
     [Header("Bullet")]
     public GameObject Bullet;
-     [SerializeField] ParticleSystem BulletParticle;
-    GameObject DestroyableBullet;
-    
-    GameObject DestroyableBulletEffect;
+    [SerializeField] private ParticleSystem BulletParticle;
     public Transform FirePoint;
     public float BulletForcing = 7f;
     public int AllBullet = 5;
     public int CurrentBullet;
     public int NumberConfinerofBullet = 5;
-    SpriteRenderer CharacterSprite;
-   
 
-    PlayerMovement playerMovement;
-    CanvasControl canvasControl;
-    LevelUp levelUp;
-   
-    private void Start() 
+    private PlayerMovement playerMovement;
+    private LevelUp levelUp;
+
+    private void Start()
     {
         playerMovement = FindObjectOfType<PlayerMovement>();
-        CanvasControl canvasControl = FindObjectOfType<CanvasControl>();
         levelUp = FindObjectOfType<LevelUp>();
-        BulletParticle.Stop();
-        CurrentBullet = AllBullet;
-       
-       
 
-       
-    
-    }
-    void Update() 
-    {
-      CurrentBullet  =  Mathf.Clamp(CurrentBullet, 0, NumberConfinerofBullet);
+        if (BulletParticle != null)
+        {
+            BulletParticle.Stop();
+        }
+
+        CurrentBullet = Mathf.Clamp(AllBullet, 0, NumberConfinerofBullet);
     }
 
-   
-
-public void AttackStart()
-{
-   if(levelUp.isFinish) {  return; }
-   if(CurrentBullet == 0)
+    private void Update()
     {
-         return;
+        CurrentBullet = Mathf.Clamp(CurrentBullet, 0, NumberConfinerofBullet);
     }
-   
-    if (playerMovement.isFacingRight)
+
+    public void AttackStart()
     {
+        if (levelUp != null && levelUp.isFinish)
+        {
+            return;
+        }
+
+        if (CurrentBullet <= 0)
+        {
+            return;
+        }
+
+        if (!CanFire())
+        {
+            return;
+        }
+
+        Vector2 fireDirection = playerMovement != null && playerMovement.isFacingRight
+            ? Vector2.right
+            : Vector2.left;
+
+        GameObject spawnedBullet = Instantiate(Bullet, FirePoint.position, FirePoint.rotation);
+
+        if (!spawnedBullet.TryGetComponent(out Rigidbody2D bulletRigidbody))
+        {
+            Debug.LogError(
+                $"{nameof(CharacterAttack)}: Bullet prefab requires a Rigidbody2D component.",
+                spawnedBullet
+            );
+            Destroy(spawnedBullet);
+            return;
+        }
+
         CurrentBullet--;
-        
+        BulletParticle?.Play();
+        bulletRigidbody.AddForce(fireDirection * BulletForcing, ForceMode2D.Impulse);
 
-        if (Bullet != null && BulletParticle != null)
-         {
-            DestroyableBullet = Instantiate(Bullet, FirePoint.position, FirePoint.rotation);
-            BulletParticle.Play();
-           
-         }
-        
-        else
-         {
-               Debug.LogError("Bullet veya BulletEffect değişkeni atanmamiş Right!");
-         } 
-
-        Rigidbody2D rb = DestroyableBullet.GetComponent<Rigidbody2D>(); 
-        rb.AddForce(-Vector2.left * BulletForcing, ForceMode2D.Impulse);
-
-        Destroy(DestroyableBullet, 4f);
-        
+        Destroy(spawnedBullet, 4f);
     }
-    else
+
+    private bool CanFire()
     {
-        CurrentBullet--;
-        
-     if (Bullet != null && BulletParticle != null)
-         {
-            DestroyableBullet = Instantiate(Bullet, FirePoint.position, FirePoint.rotation);
-            BulletParticle.Play();
-            
-         }
-        
-        else
-         {
-               Debug.LogError("Bullet veya BulletEffect değişkeni atanmamiş Left!");
-         }   
-        
-        Rigidbody2D rb = DestroyableBullet.GetComponent<Rigidbody2D>();
-        rb.AddForce(Vector2.left * BulletForcing, ForceMode2D.Impulse);
+        if (Bullet == null)
+        {
+            Debug.LogError($"{nameof(CharacterAttack)}: Bullet prefab is not assigned.", this);
+            return false;
+        }
 
-        Destroy(DestroyableBullet, 4f);
-        
+        if (FirePoint == null)
+        {
+            Debug.LogError($"{nameof(CharacterAttack)}: FirePoint is not assigned.", this);
+            return false;
+        }
+
+        return true;
     }
-
-}
-
 }
