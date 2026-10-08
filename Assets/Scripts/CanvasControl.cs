@@ -30,6 +30,7 @@ public class CanvasControl : MonoBehaviour
     private TextMeshProUGUI AppleExperience;
     private TextMeshProUGUI BulletStrawberry;
     private int exp_score;
+    private bool waitingForRespawn;
 
     private PlayerHealth playerHealth;
     private EatingFruits eatingFruits;
@@ -98,6 +99,18 @@ public class CanvasControl : MonoBehaviour
 
     private void OnHealthChanged(int current, int max)
     {
+        // The old scene timer reached zero and immediately killed Ellen again
+        // after a checkpoint respawn. Give the next attempt its full time.
+        if (current <= 0)
+            waitingForRespawn = true;
+        else if (waitingForRespawn)
+        {
+            waitingForRespawn = false;
+            CurrentTime = Mathf.Max(1, TotalTime);
+            Timer = 1f;
+            if (Times != null) Times.text = CurrentTime.ToString();
+            if (ClockFire != null) ClockFire.fillAmount = 1f;
+        }
         SyncHealthUI();
         UpdateControls();
     }
