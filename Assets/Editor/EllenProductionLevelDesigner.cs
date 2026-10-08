@@ -222,7 +222,7 @@ public static class EllenProductionLevelDesigner
         for (int i = 0; i < 8; i++)
             CreateStoneLedge(paths.transform, stone, "Balcony_" + (i + 1),
                 new Vector2(145f + i * 14f, -9f - i * 1.5f),
-                new Vector2(7f, 0.7f), new Color(0.56f, 0.77f, 0.92f, 1f));
+                new Vector2(10f, 0.7f), new Color(0.56f, 0.77f, 0.92f, 1f));
 
         // A short optional climbing detour frames Memory 2 above the path.
         for (int i = 0; i < 5; i++)

@@ -181,6 +181,13 @@ public static class EllenLevelThreeBuilder
             }
         }
 
+        // Coarse reachability guard: the clear horizontal gap between
+        // platforms must remain small enough for normal movement, not a
+        // precision dash across the secret balcony.
+        errors += ValidateLedgeGaps(scene, "Balcony_", 8, 5f);
+        errors += ValidateLedgeGaps(scene, "MemoryDetour_", 5, 3f);
+        errors += ValidateLedgeGaps(scene, "FinalDescent_", 7, 6.5f);
+
         GameObject route = Find(scene, "AstralCrypt_TraversalRoutes");
         if (route != null)
         {
@@ -217,6 +224,47 @@ public static class EllenLevelThreeBuilder
         }
 
         Debug.Log("[Ellen Level 3] " + scene.name + " validation: " + errors + " errors.");
+        return errors;
+    }
+
+    // Horizontal-only static check; actual movement still needs a Play Mode
+    // test with jump acceleration, enemy placement and existing tilemap.
+    private static int ValidateLedgeGaps(
+        Scene scene, string prefix, int ledges, float maxClearGap)
+    {
+        int errors = 0;
+        BoxCollider2D previous = null;
+        for (int i = 1; i <= ledges; i++)
+        {
+            GameObject go = Find(scene, prefix + i);
+            BoxCollider2D current = go != null
+                ? go.GetComponent<BoxCollider2D>() : null;
+            if (current == null)
+            {
+                Debug.LogError("[Ellen Level 3] Missing ledge: " + prefix + i);
+                errors++;
+                previous = null;
+                continue;
+            }
+
+            if (previous != null)
+            {
+                float centerDistance = Mathf.Abs(
+                    current.transform.position.x - previous.transform.position.x);
+                float combinedHalfWidth = 0.5f * (
+                    current.size.x * Mathf.Abs(current.transform.lossyScale.x) +
+                    previous.size.x * Mathf.Abs(previous.transform.lossyScale.x));
+                float clearGap = Mathf.Max(0f, centerDistance - combinedHalfWidth);
+                if (clearGap > maxClearGap)
+                {
+                    Debug.LogError("[Ellen Level 3] Excessive " + prefix +
+                        " gap between " + (i - 1) + " and " + i +
+                        ": " + clearGap.ToString("F2") + " units.");
+                    errors++;
+                }
+            }
+            previous = current;
+        }
         return errors;
     }
 

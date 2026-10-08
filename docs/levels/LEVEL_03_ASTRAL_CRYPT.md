@@ -32,6 +32,12 @@ banner. Fade animations use unscaled time so pause and hit-stop do not leave a
 stuck banner. All generated HUD objects and triggers live below `[LevelDesign]`;
 a rebuild removes and recreates them without touching the existing mobile HUD.
 
+The optional balcony now uses 10-unit-wide landings at 14-unit
+center-to-center spacing, leaving an approximately 4-unit clear gap rather than
+a demanding 7-unit leap. The build validator also checks horizontal gaps for
+the balcony, memory detour and final descent. These are structural guardrails,
+not substitutes for verifying jump reachability in Play Mode.
+
 The visual route uses seven cool-blue pulsing crypt beacons built from the
 project's altar sprite, not fabricated placeholder assets. They live under
 `[ProductionArt]`, have no colliders, and are replaced when the art layer is
