@@ -4,13 +4,11 @@ using UnityEngine;
 public class PlayerAdvancedMovement : MonoBehaviour
 {
     [Header("Dash")]
-    [SerializeField] private bool dashUnlocked = true;
     [SerializeField] private float dashSpeed = 16f;
     [SerializeField] private float dashDuration = 0.16f;
     [SerializeField] private float dashCooldown = 0.35f;
 
     [Header("Wall")]
-    [SerializeField] private bool wallJumpUnlocked = true;
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private float wallCheckRadius = 0.18f;
@@ -24,6 +22,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
     private bool facingRight = true;
     private float legacyMovementLockTimer;
     private PlayerHealth health;
+    private PlayerAbilityController abilities;
 
     public bool IsDashing => dashTimer > 0f;
     public bool OverridesLegacyMovement => IsDashing || legacyMovementLockTimer > 0f;
@@ -33,6 +32,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         originalGravity = body.gravityScale;
         health = GetComponent<PlayerHealth>();
+        abilities = GetComponent<PlayerAbilityController>();
     }
 
     private void Update()
@@ -49,7 +49,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
 
     public void Dash()
     {
-        if (!dashUnlocked || cooldownTimer > 0f || IsDashing) return;
+        if (abilities == null || !abilities.Has(PlayerAbilityController.Ability.Dash) || cooldownTimer > 0f || IsDashing) return;
         dashTimer = dashDuration;
         cooldownTimer = dashCooldown;
         body.gravityScale = 0f;
@@ -58,7 +58,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
 
     public void WallJump()
     {
-        if (!wallJumpUnlocked || wallCheck == null) return;
+        if (abilities == null || !abilities.Has(PlayerAbilityController.Ability.WallJump) || wallCheck == null) return;
         Collider2D wall = Physics2D.OverlapCircle(wallCheck.position, wallCheckRadius, wallLayer);
         if (wall == null) return;
 
