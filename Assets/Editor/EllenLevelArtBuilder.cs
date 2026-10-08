@@ -296,6 +296,7 @@ public static class EllenLevelArtBuilder
         source.playOnAwake = true;
         source.spatialBlend = 0f;
         source.volume = 0.15f;
+        go.AddComponent<EllenAmbienceVolume>();
     }
 
     private static void RemovePreviousLandmarkVisuals(Transform design)
