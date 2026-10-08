@@ -357,6 +357,7 @@ public static class EllenProductionSceneInstaller
         // Uses the same actions as the existing mobile controls; adds desktop
         // and gamepad input without replacing the legacy scene's touch UI.
         EnsureComponent<EllenGameplayInput>(player);
+        EnsureComponent<EllenFallRecovery>(player);
         PlayerRespawnController respawn = EnsureComponent<PlayerRespawnController>(player);
         PlayerMovementFeedback feedback = EnsureComponent<PlayerMovementFeedback>(player);
         PlayerDamagePresenter damagePresenter = EnsureComponent<PlayerDamagePresenter>(player);
