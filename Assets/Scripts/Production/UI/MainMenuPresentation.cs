@@ -5,7 +5,7 @@ using UnityEngine;
 public class MainMenuPresentation : MonoBehaviour
 {
     [SerializeField, Range(0.2f, 1.5f)] private float introDuration = 0.65f;
-    [SerializeField] private RectTransform title;
+    [SerializeField] private RectTransform[] titleParts;
     [SerializeField] private RectTransform[] menuButtons;
     [SerializeField] private Transform[] backgroundLayers;
     [SerializeField, Range(0.85f, 1f)] private float titleStartScale = 0.92f;
@@ -14,7 +14,7 @@ public class MainMenuPresentation : MonoBehaviour
 
     private CanvasGroup group;
     private Coroutine intro;
-    private Vector3 titleBaseScale = Vector3.one;
+    private Vector3[] titleBaseScales;
     private Vector2[] buttonOrigins;
     private Vector3[] backgroundOrigins;
 
@@ -22,7 +22,12 @@ public class MainMenuPresentation : MonoBehaviour
     {
         group = GetComponent<CanvasGroup>();
 
-        if (title != null) titleBaseScale = title.localScale;
+        if (titleParts != null)
+        {
+            titleBaseScales = new Vector3[titleParts.Length];
+            for (int i = 0; i < titleParts.Length; i++)
+                if (titleParts[i] != null) titleBaseScales[i] = titleParts[i].localScale;
+        }
 
         if (menuButtons != null)
         {
@@ -72,7 +77,11 @@ public class MainMenuPresentation : MonoBehaviour
         group.interactable = false;
         group.blocksRaycasts = false;
 
-        if (title != null) title.localScale = titleBaseScale * titleStartScale;
+        if (titleParts != null && titleBaseScales != null)
+        {
+            for (int i = 0; i < titleParts.Length; i++)
+                if (titleParts[i] != null) titleParts[i].localScale = titleBaseScales[i] * titleStartScale;
+        }
 
         if (menuButtons != null && buttonOrigins != null)
         {
@@ -93,8 +102,17 @@ public class MainMenuPresentation : MonoBehaviour
 
             group.alpha = eased;
 
-            if (title != null)
-                title.localScale = Vector3.LerpUnclamped(titleBaseScale * titleStartScale, titleBaseScale, eased);
+            if (titleParts != null && titleBaseScales != null)
+            {
+                for (int i = 0; i < titleParts.Length; i++)
+                {
+                    if (titleParts[i] == null) continue;
+                    titleParts[i].localScale = Vector3.LerpUnclamped(
+                        titleBaseScales[i] * titleStartScale,
+                        titleBaseScales[i],
+                        eased);
+                }
+            }
 
             if (menuButtons != null && buttonOrigins != null)
             {
@@ -114,7 +132,9 @@ public class MainMenuPresentation : MonoBehaviour
         group.interactable = true;
         group.blocksRaycasts = true;
 
-        if (title != null) title.localScale = titleBaseScale;
+        if (titleParts != null && titleBaseScales != null)
+            for (int i = 0; i < titleParts.Length; i++)
+                if (titleParts[i] != null) titleParts[i].localScale = titleBaseScales[i];
 
         if (menuButtons != null && buttonOrigins != null)
             for (int i = 0; i < menuButtons.Length; i++)
