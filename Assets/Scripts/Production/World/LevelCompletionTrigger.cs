@@ -17,9 +17,10 @@ public class LevelCompletionTrigger : MonoBehaviour
 
     private void TryFinish(Collider2D other)
     {
-        if (!other.CompareTag("Player") || flow == null || flow.Completed) return;
+        if (flow == null || flow.Completed) return;
+        // Player character rigs can place a collider on an untagged child.
         PlayerHealth health = other.GetComponentInParent<PlayerHealth>();
-        if (health != null && !health.isAlive) return;
+        if (health == null || !health.isAlive) return;
         // Required objectives may become satisfied while Ellen is already
         // inside the exit sensor; no need to leave and re-enter the trigger.
         flow.TryComplete();
