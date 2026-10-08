@@ -467,28 +467,29 @@ IEnumerator WaitingBirthParticle()
     public void SetNextLevel()
     {
         Time.timeScale = 1f;
-        levelUp.isFinish = false;
+        if (levelUp != null) levelUp.isFinish = false;
 
-        if(SceneManager.GetActiveScene().buildIndex == 1)
+        int buildIndex = SceneManager.GetActiveScene().buildIndex;
+        ProgressionSave.Data progress = ProgressionSave.Load();
+
+        if (buildIndex == 1)
         {
-            ProgressionSave.Data progress = ProgressionSave.Load();
             progress.highestUnlockedLevel = Mathf.Max(progress.highestUnlockedLevel, 2);
             ProgressionSave.Save(progress);
-            canvascontrol.Star1.fillAmount = 1f;
-            canvascontrol.Star2.fillAmount = 1f;
-            canvascontrol.Star3.fillAmount = 1f;
-            
             SceneManager.LoadScene(sceneName[2]);
-
-        }
-
-        else
-        {
             return;
         }
 
-        
-        
+        if (buildIndex == 2)
+        {
+            progress.highestUnlockedLevel = Mathf.Max(progress.highestUnlockedLevel, 2);
+            progress.campaignCompleted = true;
+            ProgressionSave.Save(progress);
+            SceneManager.LoadScene(sceneName[0]);
+            return;
+        }
+
+        Debug.LogWarning("[ScenesManager] SetNextLevel called from an unsupported scene.", this);
     }
 
     public void StopGame()
