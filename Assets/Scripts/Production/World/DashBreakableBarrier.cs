@@ -27,7 +27,11 @@ public class DashBreakableBarrier : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other) => TryBreak(other);
+
+    private void OnTriggerStay2D(Collider2D other) => TryBreak(other);
+
+    private void TryBreak(Collider2D other)
     {
         if (broken || !other.CompareTag("Player")) return;
 
