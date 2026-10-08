@@ -43,6 +43,7 @@ public class PlayerMovement : MonoBehaviour
     LevelUp levelUp;
     PowerUps powerUps;
     TrapofEnemy trapofEnemy;
+    PlayerAdvancedMovement advancedMovement;
  
 
     public Rigidbody2D myRigidbody;
@@ -85,13 +86,14 @@ public class PlayerMovement : MonoBehaviour
         levelUp = FindObjectOfType<LevelUp>();
         trapofEnemy = FindObjectOfType<TrapofEnemy>();
         powerUps = FindObjectOfType<PowerUps>();
+        advancedMovement = GetComponent<PlayerAdvancedMovement>();
         
     }
     private void Start()
     {
         
         AirRunSpeed = 1200f;
-        gameObject.transform.position = RespawnPoint.position;
+        if (RespawnPoint != null) gameObject.transform.position = RespawnPoint.position;
         RemainingJumping = MaxJumping;
         isFacingRight = true;
 
@@ -145,7 +147,7 @@ public class PlayerMovement : MonoBehaviour
         }
        
        
-        if (other.gameObject.tag == "Trap" && !trapofEnemy.isActiveDefence)
+        if (other.CompareTag("Trap") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
         {
            
            TrapEffect.Play();
@@ -208,6 +210,8 @@ public class PlayerMovement : MonoBehaviour
 
         if(boosterPowerUp.isBooster) { runSpeed = 2000f; }
         else { runSpeed = 1500f; }
+
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
 
         
         
@@ -347,6 +351,7 @@ public class PlayerMovement : MonoBehaviour
 
    private void Move(Vector2 Direction,float Speed)
     {
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
         if (playerHealth.currenthealth <= 0 || trapThorns.isTouchingthorn)
         {
             return;
@@ -438,6 +443,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void StopRight()
     {
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
         myRigidbody.linearVelocity = new Vector2(0f, myRigidbody.linearVelocity.y);
         CharacterAnimator.SetBool("idle", true);
         CharacterAnimator.SetBool("run", false);
@@ -467,7 +473,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void StopLeft()
     {
-        myRigidbody.linearVelocity = Vector2.zero;
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
+        myRigidbody.linearVelocity = new Vector2(0f, myRigidbody.linearVelocity.y);
         CharacterAnimator.SetBool("idle", true);
         CharacterAnimator.SetBool("run", false);
         CharacterAnimator.SetBool("jump", false);
@@ -483,6 +490,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void FlipRight()
     {
+        advancedMovement?.SetFacing(true);
      
         if(mytransform.localScale.x < 0)
         {
@@ -505,6 +513,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void FlipLeft()
     {
+        advancedMovement?.SetFacing(false);
         if (mytransform.localScale.x > 0)
         {
            
