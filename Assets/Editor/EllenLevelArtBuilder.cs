@@ -226,32 +226,54 @@ public static class EllenLevelArtBuilder
             bool dashGate = item.name.StartsWith("DashBarrier_");
             bool objectiveGate = item.name.EndsWith("ObjectiveGate");
             bool ascentWall = item.name == "LeftWall" || item.name == "RightWall";
+            bool spiritWell = item.name.StartsWith("SpiritWell_");
+            bool abilitySeal = item.name.StartsWith("AbilitySeal_");
             if (!shrine && !memory && !spiritGate && !dashGate &&
-                !objectiveGate && !ascentWall) continue;
+                !objectiveGate && !ascentWall && !spiritWell && !abilitySeal) continue;
 
-            Sprite sprite = shrine || memory ? altar : ascentWall ? wall : pillar;
+            Sprite sprite = shrine || memory || spiritWell ? altar : ascentWall ? wall : pillar;
             float height = shrine ? 4.0f : memory ? 1.5f :
-                ascentWall ? 40f : 12f;
+                spiritWell ? 3.0f : ascentWall ? 40f : 12f;
             float width = ascentWall ? 1.15f : 0f;
 
             // Game-object ownership is deliberate: pickups destroy their art,
             // barriers control their own visualRoot, and checkpoints stay visible.
             Transform parent = item;
-            if (spiritGate || dashGate || objectiveGate)
+            if (spiritGate || dashGate || objectiveGate || abilitySeal)
             {
-                Transform visual = item.Find(spiritGate ? "SpiritBarrierVisual" :
-                    dashGate ? "DashBarrierVisual" : "ObjectiveBarrierVisual");
+                string visualName = spiritGate ? "SpiritBarrierVisual" :
+                    dashGate ? "DashBarrierVisual" :
+                    objectiveGate ? "ObjectiveBarrierVisual" : "AbilitySealVisual";
+                Transform visual = item.Find(visualName);
                 if (visual != null) parent = visual;
             }
+            Color tint = abilitySeal
+                ? (item.name.Contains("Spirit")
+                    ? new Color(0.32f, 0.88f, 1f, 0.95f)
+                    : new Color(1f, 0.68f, 0.3f, 0.95f))
+                : spiritWell ? new Color(0.38f, 1f, 0.82f, 1f) : palette.Accent;
             GameObject go = SpriteObject(parent, "ProductionVisual", sprite,
-                item.position, shrine ? 24 : memory ? 35 : -5, palette.Accent);
+                item.position, shrine ? 24 : memory ? 35 : spiritWell ? 22 : -5, tint);
             go.transform.localPosition = Vector3.zero;
             if (width > 0f) ScaleToDimensions(go.transform, sprite, width, height);
             else ScaleToHeight(go.transform, sprite, height);
 
-            if (shrine)
-            {
+            if (shrine || spiritWell)
                 go.transform.localPosition = new Vector3(0f, -0.15f, 0f);
+
+            // Connect the live ready/cooldown indicator to the actual art
+            // rather than leaving the component with an unassigned reference.
+            if (spiritWell)
+            {
+                SpiritWell well = item.GetComponent<SpiritWell>();
+                if (well != null)
+                {
+                    SerializedObject so = new SerializedObject(well);
+                    SerializedProperty indicator = so.FindProperty("indicator");
+                    if (indicator != null)
+                        indicator.objectReferenceValue = go.GetComponent<SpriteRenderer>();
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
             }
         }
 
