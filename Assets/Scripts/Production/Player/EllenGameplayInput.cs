@@ -16,6 +16,7 @@ public sealed class EllenGameplayInput : MonoBehaviour
     [SerializeField] private PlayerAbilityController abilities;
     [SerializeField] private CharacterAttack attack;
     [SerializeField] private PlayerHealth health;
+    [SerializeField] private ScenesManager scenesManager;
 
     private bool leftHeld;
     private bool rightHeld;
@@ -27,10 +28,17 @@ public sealed class EllenGameplayInput : MonoBehaviour
         if (abilities == null) abilities = GetComponent<PlayerAbilityController>();
         if (attack == null) attack = GetComponent<CharacterAttack>();
         if (health == null) health = GetComponent<PlayerHealth>();
+        if (scenesManager == null) scenesManager = FindObjectOfType<ScenesManager>();
     }
 
     private void Update()
     {
+        if (PauseRequested() && scenesManager != null)
+        {
+            if (Time.timeScale <= 0f) scenesManager.ResumeGame();
+            else scenesManager.StopGame();
+        }
+
         if (Time.timeScale <= 0f || (health != null && !health.isAlive))
         {
             ReleaseInputs();
@@ -115,6 +123,20 @@ public sealed class EllenGameplayInput : MonoBehaviour
         if (wallPressed) abilities?.TryWallJump();
         if (spiritPressed) abilities?.TryToggleSpirit();
         if (firePressed) attack?.AttackStart();
+    }
+
+    private static bool PauseRequested()
+    {
+#if ENABLE_INPUT_SYSTEM
+        Keyboard keyboard = Keyboard.current;
+        Gamepad gamepad = Gamepad.current;
+        return (keyboard != null && keyboard.escapeKey.wasPressedThisFrame) ||
+               (gamepad != null && gamepad.startButton.wasPressedThisFrame);
+#elif ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetKeyDown(KeyCode.Escape);
+#else
+        return false;
+#endif
     }
 
     private void OnDisable() => ReleaseInputs();
