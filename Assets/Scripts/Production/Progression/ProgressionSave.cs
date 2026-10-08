@@ -101,6 +101,9 @@ public static class ProgressionSave
             record.bestRank = result.Rank;
 
         data.highestUnlockedLevel = Mathf.Clamp(Mathf.Max(data.highestUnlockedLevel, result.LevelNumber + 1), 1, MaxPlayableLevel);
+        // Level 3 is the current campaign finale; keep its completion in the save.
+        if (result.LevelNumber >= MaxPlayableLevel)
+            data.campaignCompleted = true;
 
         // Legacy aggregate fields stay valid for older UI/save consumers.
         if (data.bestCompletionTime <= 0f || result.CompletionTime < data.bestCompletionTime)
@@ -112,6 +115,18 @@ public static class ProgressionSave
 
         RecalculateCollectibleTotals(data);
         Save(data);
+    }
+
+    /// <summary>Start a clean campaign while preserving user audio preferences.</summary>
+    public static void ResetForNewJourney()
+    {
+        Data current = Load();
+        Data fresh = new Data
+        {
+            musicVolume = current.musicVolume,
+            sfxVolume = current.sfxVolume
+        };
+        Save(fresh);
     }
 
     public static LevelRecord GetLevelRecord(string levelId)
