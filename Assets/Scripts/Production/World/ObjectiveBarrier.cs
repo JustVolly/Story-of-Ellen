@@ -56,7 +56,7 @@ public class ObjectiveBarrier : MonoBehaviour
 
     private void Refresh()
     {
-        bool locked = flow != null && !flow.ObjectivesMet;
+        bool locked = flow != null && !flow.ObjectivesMet();
         if (blocker != null) blocker.enabled = locked;
         if (visualRoot != null) visualRoot.SetActive(locked);
     }
