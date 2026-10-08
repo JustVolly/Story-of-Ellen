@@ -81,6 +81,7 @@ public static class EllenProductionSceneInstaller
         GameObject play = FindInScene("Play");
         GameObject quit = FindInScene("Quit");
         GameObject newJourney = FindInScene("NewJourney");
+        GameObject settingsButton = FindInScene("Settings");
 
         if (newJourney == null && play != null)
         {
@@ -110,8 +111,29 @@ public static class EllenProductionSceneInstaller
             }
         }
 
+        if (settingsButton == null && quit != null)
+        {
+            settingsButton = Object.Instantiate(quit, quit.transform.parent);
+            settingsButton.name = "Settings";
+            Undo.RegisterCreatedObjectUndo(settingsButton, "Create Settings button");
+
+            RectTransform settingsRect = settingsButton.GetComponent<RectTransform>();
+            RectTransform quitRect = quit.GetComponent<RectTransform>();
+
+            if (settingsRect != null && quitRect != null)
+            {
+                settingsRect.anchoredPosition = quitRect.anchoredPosition;
+                quitRect.anchoredPosition += Vector2.down * 42f;
+            }
+
+            TextMeshProUGUI label = settingsButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null) label.text = "SETTINGS";
+        }
+
+        MainMenuSettingsController settingsController = EnsureSettingsPanel(canvas, startScene, settingsButton);
+
         RectTransform[] titleParts = CollectRects("StoryOfEllen", "StoryOfEllen (1)");
-        RectTransform[] menuButtons = CollectRects("Play", "NewJourney", "Quit");
+        RectTransform[] menuButtons = CollectRects("Play", "NewJourney", "Settings", "Quit");
         Transform[] backgrounds = CollectTransforms("Background2", "Background");
 
         SerializedObject presentationSo = new SerializedObject(presentation);
@@ -128,6 +150,7 @@ public static class EllenProductionSceneInstaller
 
         StyleButton(play);
         StyleButton(newJourney);
+        StyleButton(settingsButton);
         StyleButton(quit);
 
         if (loader != null && loader.loadingScreen != null)
@@ -140,6 +163,173 @@ public static class EllenProductionSceneInstaller
         EditorUtility.SetDirty(canvasGroup);
         EditorUtility.SetDirty(presentation);
         EditorUtility.SetDirty(startScene);
+    }
+
+    private static MainMenuSettingsController EnsureSettingsPanel(Canvas canvas, StartScene startScene, GameObject settingsButton)
+    {
+        MainMenuSettingsController controller = EnsureComponent<MainMenuSettingsController>(canvas.gameObject);
+
+        GameObject panel = FindInScene("SettingsPanel");
+        Slider musicSlider;
+        Slider sfxSlider;
+
+        if (panel == null)
+        {
+            panel = CreateImage("SettingsPanel", canvas.transform, new Color(0.02f, 0.03f, 0.05f, 0.96f));
+            Undo.RegisterCreatedObjectUndo(panel, "Create Settings panel");
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = Vector2.zero;
+            panelRect.sizeDelta = new Vector2(680f, 420f);
+
+            CanvasGroup group = EnsureComponent<CanvasGroup>(panel);
+            group.alpha = 1f;
+            UIPanelTransition transition = EnsureComponent<UIPanelTransition>(panel);
+
+            GameObject title = CreateText("SettingsTitle", panelRect, "SETTINGS", 34f);
+            RectTransform titleRect = title.GetComponent<RectTransform>();
+            titleRect.anchorMin = titleRect.anchorMax = new Vector2(0.5f, 1f);
+            titleRect.pivot = new Vector2(0.5f, 1f);
+            titleRect.anchoredPosition = new Vector2(0f, -34f);
+            titleRect.sizeDelta = new Vector2(420f, 52f);
+
+            GameObject musicLabel = CreateText("MusicLabel", panelRect, "MUSIC", 22f);
+            RectTransform musicLabelRect = musicLabel.GetComponent<RectTransform>();
+            musicLabelRect.anchorMin = musicLabelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            musicLabelRect.anchoredPosition = new Vector2(-220f, 55f);
+            musicLabelRect.sizeDelta = new Vector2(160f, 40f);
+
+            musicSlider = CreateSlider("MusicSlider", panelRect);
+            RectTransform musicRect = musicSlider.GetComponent<RectTransform>();
+            musicRect.anchorMin = musicRect.anchorMax = new Vector2(0.5f, 0.5f);
+            musicRect.anchoredPosition = new Vector2(85f, 55f);
+            musicRect.sizeDelta = new Vector2(340f, 28f);
+
+            GameObject sfxLabel = CreateText("SfxLabel", panelRect, "SFX", 22f);
+            RectTransform sfxLabelRect = sfxLabel.GetComponent<RectTransform>();
+            sfxLabelRect.anchorMin = sfxLabelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            sfxLabelRect.anchoredPosition = new Vector2(-220f, -25f);
+            sfxLabelRect.sizeDelta = new Vector2(160f, 40f);
+
+            sfxSlider = CreateSlider("SfxSlider", panelRect);
+            RectTransform sfxRect = sfxSlider.GetComponent<RectTransform>();
+            sfxRect.anchorMin = sfxRect.anchorMax = new Vector2(0.5f, 0.5f);
+            sfxRect.anchoredPosition = new Vector2(85f, -25f);
+            sfxRect.sizeDelta = new Vector2(340f, 28f);
+
+            GameObject back = CreateButton("SettingsBack", panelRect, "BACK");
+            RectTransform backRect = back.GetComponent<RectTransform>();
+            backRect.anchorMin = backRect.anchorMax = new Vector2(0.5f, 0f);
+            backRect.pivot = new Vector2(0.5f, 0f);
+            backRect.anchoredPosition = new Vector2(0f, 36f);
+            backRect.sizeDelta = new Vector2(240f, 58f);
+
+            SerializedObject controllerSo = new SerializedObject(controller);
+            controllerSo.FindProperty("panel").objectReferenceValue = panel;
+            controllerSo.FindProperty("panelTransition").objectReferenceValue = transition;
+            controllerSo.FindProperty("musicSlider").objectReferenceValue = musicSlider;
+            controllerSo.FindProperty("sfxSlider").objectReferenceValue = sfxSlider;
+            controllerSo.FindProperty("startScene").objectReferenceValue = startScene;
+            controllerSo.ApplyModifiedPropertiesWithoutUndo();
+
+            Button backButton = back.GetComponent<Button>();
+            backButton.onClick = new Button.ButtonClickedEvent();
+            UnityEventTools.AddPersistentListener(backButton.onClick, controller.Close);
+
+            musicSlider.onValueChanged = new Slider.SliderEvent();
+            sfxSlider.onValueChanged = new Slider.SliderEvent();
+            UnityEventTools.AddPersistentListener(musicSlider.onValueChanged, controller.SetMusicVolume);
+            UnityEventTools.AddPersistentListener(sfxSlider.onValueChanged, controller.SetSfxVolume);
+        }
+        else
+        {
+            musicSlider = FindInScene("MusicSlider")?.GetComponent<Slider>();
+            sfxSlider = FindInScene("SfxSlider")?.GetComponent<Slider>();
+        }
+
+        if (settingsButton != null)
+        {
+            Button button = settingsButton.GetComponent<Button>();
+            if (button != null)
+            {
+                button.onClick = new Button.ButtonClickedEvent();
+                UnityEventTools.AddPersistentListener(button.onClick, controller.Open);
+            }
+        }
+
+        EditorUtility.SetDirty(controller);
+        return controller;
+    }
+
+    private static Slider CreateSlider(string name, Transform parent)
+    {
+        GameObject sliderObject = new GameObject(name, typeof(RectTransform), typeof(Slider));
+        sliderObject.transform.SetParent(parent, false);
+        Slider slider = sliderObject.GetComponent<Slider>();
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+        slider.value = 1f;
+
+        GameObject background = CreateImage("Background", sliderObject.transform, new Color(1f, 1f, 1f, 0.15f));
+        RectTransform backgroundRect = background.GetComponent<RectTransform>();
+        backgroundRect.anchorMin = new Vector2(0f, 0.25f);
+        backgroundRect.anchorMax = new Vector2(1f, 0.75f);
+        backgroundRect.offsetMin = Vector2.zero;
+        backgroundRect.offsetMax = Vector2.zero;
+
+        GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
+        fillArea.transform.SetParent(sliderObject.transform, false);
+        RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
+        fillAreaRect.anchorMin = new Vector2(0f, 0.25f);
+        fillAreaRect.anchorMax = new Vector2(1f, 0.75f);
+        fillAreaRect.offsetMin = new Vector2(5f, 0f);
+        fillAreaRect.offsetMax = new Vector2(-5f, 0f);
+
+        GameObject fillObject = CreateImage("Fill", fillAreaRect, new Color(0.35f, 0.86f, 0.95f, 1f));
+        RectTransform fillRect = fillObject.GetComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+
+        GameObject handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
+        handleArea.transform.SetParent(sliderObject.transform, false);
+        RectTransform handleAreaRect = handleArea.GetComponent<RectTransform>();
+        handleAreaRect.anchorMin = Vector2.zero;
+        handleAreaRect.anchorMax = Vector2.one;
+        handleAreaRect.offsetMin = new Vector2(10f, 0f);
+        handleAreaRect.offsetMax = new Vector2(-10f, 0f);
+
+        GameObject handleObject = CreateImage("Handle", handleAreaRect, Color.white);
+        RectTransform handleRect = handleObject.GetComponent<RectTransform>();
+        handleRect.sizeDelta = new Vector2(22f, 32f);
+
+        slider.fillRect = fillRect;
+        slider.handleRect = handleRect;
+        slider.targetGraphic = handleObject.GetComponent<Image>();
+        slider.direction = Slider.Direction.LeftToRight;
+        return slider;
+    }
+
+    private static GameObject CreateButton(string name, Transform parent, string label)
+    {
+        GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(parent, false);
+
+        Image image = buttonObject.GetComponent<Image>();
+        image.color = new Color(1f, 1f, 1f, 0.12f);
+
+        GameObject labelObject = CreateText("Label", buttonObject.transform, label, 22f);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+
+        StyleButton(buttonObject);
+        return buttonObject;
     }
 
     private static void UpgradeGameplayScene()
