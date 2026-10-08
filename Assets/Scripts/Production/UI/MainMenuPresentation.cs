@@ -6,9 +6,8 @@ public class MainMenuPresentation : MonoBehaviour
 {
     [SerializeField, Range(0.2f, 1.5f)] private float introDuration = 0.65f;
     [SerializeField] private RectTransform title;
-    [SerializeField] private RectTransform playButton;
-    [SerializeField] private RectTransform quitButton;
-    [SerializeField] private RectTransform[] backgroundLayers;
+    [SerializeField] private RectTransform[] menuButtons;
+    [SerializeField] private Transform[] backgroundLayers;
     [SerializeField, Range(0.85f, 1f)] private float titleStartScale = 0.92f;
     [SerializeField, Range(0f, 120f)] private float buttonStartOffset = 42f;
     [SerializeField, Range(0f, 15f)] private float backgroundDrift = 3f;
@@ -16,23 +15,27 @@ public class MainMenuPresentation : MonoBehaviour
     private CanvasGroup group;
     private Coroutine intro;
     private Vector3 titleBaseScale = Vector3.one;
-    private Vector2 playOrigin;
-    private Vector2 quitOrigin;
-    private Vector2[] backgroundOrigins;
+    private Vector2[] buttonOrigins;
+    private Vector3[] backgroundOrigins;
 
     private void Awake()
     {
         group = GetComponent<CanvasGroup>();
 
         if (title != null) titleBaseScale = title.localScale;
-        if (playButton != null) playOrigin = playButton.anchoredPosition;
-        if (quitButton != null) quitOrigin = quitButton.anchoredPosition;
+
+        if (menuButtons != null)
+        {
+            buttonOrigins = new Vector2[menuButtons.Length];
+            for (int i = 0; i < menuButtons.Length; i++)
+                if (menuButtons[i] != null) buttonOrigins[i] = menuButtons[i].anchoredPosition;
+        }
 
         if (backgroundLayers != null)
         {
-            backgroundOrigins = new Vector2[backgroundLayers.Length];
+            backgroundOrigins = new Vector3[backgroundLayers.Length];
             for (int i = 0; i < backgroundLayers.Length; i++)
-                if (backgroundLayers[i] != null) backgroundOrigins[i] = backgroundLayers[i].anchoredPosition;
+                if (backgroundLayers[i] != null) backgroundOrigins[i] = backgroundLayers[i].localPosition;
         }
     }
 
@@ -55,11 +58,11 @@ public class MainMenuPresentation : MonoBehaviour
         float wave = Mathf.Sin(Time.unscaledTime * 0.22f);
         for (int i = 0; i < backgroundLayers.Length; i++)
         {
-            RectTransform layer = backgroundLayers[i];
+            Transform layer = backgroundLayers[i];
             if (layer == null) continue;
 
             float depth = 1f + i * 0.45f;
-            layer.anchoredPosition = backgroundOrigins[i] + new Vector2(wave * backgroundDrift / depth, 0f);
+            layer.localPosition = backgroundOrigins[i] + Vector3.right * (wave * backgroundDrift / depth);
         }
     }
 
@@ -70,8 +73,16 @@ public class MainMenuPresentation : MonoBehaviour
         group.blocksRaycasts = false;
 
         if (title != null) title.localScale = titleBaseScale * titleStartScale;
-        if (playButton != null) playButton.anchoredPosition = playOrigin + Vector2.right * buttonStartOffset;
-        if (quitButton != null) quitButton.anchoredPosition = quitOrigin + Vector2.right * (buttonStartOffset * 1.25f);
+
+        if (menuButtons != null && buttonOrigins != null)
+        {
+            for (int i = 0; i < menuButtons.Length; i++)
+            {
+                if (menuButtons[i] == null) continue;
+                float stagger = buttonStartOffset * (1f + i * 0.2f);
+                menuButtons[i].anchoredPosition = buttonOrigins[i] + Vector2.right * stagger;
+            }
+        }
 
         float elapsed = 0f;
         while (elapsed < introDuration)
@@ -85,11 +96,16 @@ public class MainMenuPresentation : MonoBehaviour
             if (title != null)
                 title.localScale = Vector3.LerpUnclamped(titleBaseScale * titleStartScale, titleBaseScale, eased);
 
-            if (playButton != null)
-                playButton.anchoredPosition = Vector2.LerpUnclamped(playOrigin + Vector2.right * buttonStartOffset, playOrigin, eased);
-
-            if (quitButton != null)
-                quitButton.anchoredPosition = Vector2.LerpUnclamped(quitOrigin + Vector2.right * (buttonStartOffset * 1.25f), quitOrigin, eased);
+            if (menuButtons != null && buttonOrigins != null)
+            {
+                for (int i = 0; i < menuButtons.Length; i++)
+                {
+                    if (menuButtons[i] == null) continue;
+                    float stagger = buttonStartOffset * (1f + i * 0.2f);
+                    Vector2 start = buttonOrigins[i] + Vector2.right * stagger;
+                    menuButtons[i].anchoredPosition = Vector2.LerpUnclamped(start, buttonOrigins[i], eased);
+                }
+            }
 
             yield return null;
         }
@@ -99,8 +115,10 @@ public class MainMenuPresentation : MonoBehaviour
         group.blocksRaycasts = true;
 
         if (title != null) title.localScale = titleBaseScale;
-        if (playButton != null) playButton.anchoredPosition = playOrigin;
-        if (quitButton != null) quitButton.anchoredPosition = quitOrigin;
+
+        if (menuButtons != null && buttonOrigins != null)
+            for (int i = 0; i < menuButtons.Length; i++)
+                if (menuButtons[i] != null) menuButtons[i].anchoredPosition = buttonOrigins[i];
 
         intro = null;
     }
