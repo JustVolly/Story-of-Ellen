@@ -9,8 +9,14 @@ public class MemoryFragment : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
         GameSession.Instance?.CollectMemory();
-        if (collectEffect != null) Instantiate(collectEffect, transform.position, Quaternion.identity);
-        if (collectAudio != null) AudioSource.PlayClipAtPoint(collectAudio.clip, transform.position, collectAudio.volume);
+        if (collectEffect != null)
+        {
+            ParticleSystem effect = Instantiate(collectEffect, transform.position, Quaternion.identity);
+            ParticleSystem.MainModule main = effect.main;
+            Destroy(effect.gameObject, main.duration + main.startLifetime.constantMax + 0.25f);
+        }
+        if (collectAudio != null && collectAudio.clip != null)
+            AudioSource.PlayClipAtPoint(collectAudio.clip, transform.position, collectAudio.volume);
         Destroy(gameObject);
     }
 }
