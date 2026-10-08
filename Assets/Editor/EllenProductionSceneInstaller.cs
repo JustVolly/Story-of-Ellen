@@ -583,6 +583,37 @@ public static class EllenProductionSceneInstaller
         abilitySo.FindProperty("title").objectReferenceValue = abilityTitle.GetComponent<TextMeshProUGUI>();
         abilitySo.FindProperty("description").objectReferenceValue = abilityDescription.GetComponent<TextMeshProUGUI>();
         abilitySo.ApplyModifiedPropertiesWithoutUndo();
+
+        GameObject spiritTutorial = CreateImage("SpiritTutorialToast", hudRect, new Color(0.025f, 0.035f, 0.055f, 0.9f));
+        RectTransform tutorialRect = spiritTutorial.GetComponent<RectTransform>();
+        tutorialRect.anchorMin = tutorialRect.anchorMax = new Vector2(0.5f, 1f);
+        tutorialRect.pivot = new Vector2(0.5f, 1f);
+        tutorialRect.anchoredPosition = new Vector2(0f, -154f);
+        tutorialRect.sizeDelta = new Vector2(720f, 76f);
+
+        CanvasGroup tutorialGroup = EnsureComponent<CanvasGroup>(spiritTutorial);
+        tutorialGroup.alpha = 0f;
+        tutorialGroup.interactable = false;
+        tutorialGroup.blocksRaycasts = false;
+
+        GameObject tutorialMessage = CreateText(
+            "SpiritTutorialMessage",
+            tutorialRect,
+            "Spirit World reveals hidden paths, but staying here consumes energy.",
+            18f);
+
+        RectTransform tutorialMessageRect = tutorialMessage.GetComponent<RectTransform>();
+        tutorialMessageRect.anchorMin = Vector2.zero;
+        tutorialMessageRect.anchorMax = Vector2.one;
+        tutorialMessageRect.offsetMin = new Vector2(24f, 10f);
+        tutorialMessageRect.offsetMax = new Vector2(-24f, -10f);
+
+        SpiritTutorialPresenter tutorialPresenter = EnsureComponent<SpiritTutorialPresenter>(spiritTutorial);
+        SerializedObject tutorialSo = new SerializedObject(tutorialPresenter);
+        tutorialSo.FindProperty("spiritWorld").objectReferenceValue = spirit;
+        tutorialSo.FindProperty("panel").objectReferenceValue = tutorialGroup;
+        tutorialSo.FindProperty("message").objectReferenceValue = tutorialMessage.GetComponent<TextMeshProUGUI>();
+        tutorialSo.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void EnsureDashButton(PlayerAbilityController abilities)
