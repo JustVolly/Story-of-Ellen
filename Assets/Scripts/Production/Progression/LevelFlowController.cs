@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class LevelFlowController : MonoBehaviour
 {
+    [Header("Identity")]
+    [SerializeField] private string levelId = "Level";
+    [SerializeField, Min(1)] private int levelNumber = 1;
+
     [Header("Objectives")]
     [SerializeField, Min(0)] private int requiredMemories;
     [SerializeField, Min(0)] private int requiredSecrets;
@@ -17,6 +21,8 @@ public class LevelFlowController : MonoBehaviour
     private bool completed;
 
     public bool Completed => completed;
+    public string LevelId => levelId;
+    public int LevelNumber => levelNumber;
     public int RequiredMemories => requiredMemories;
     public int RequiredSecrets => requiredSecrets;
     public bool RequiresBossDefeat => requireBossDefeat;
@@ -44,7 +50,7 @@ public class LevelFlowController : MonoBehaviour
     {
         if (completed || !ObjectivesMet()) return false;
         completed = true;
-        LevelResult result = LevelResult.FromSession(totalMemories, sRankTime, aRankTime);
+        LevelResult result = LevelResult.FromSession(levelId, levelNumber, totalMemories, sRankTime, aRankTime);
         LevelCompleted?.Invoke(result);
         return true;
     }
