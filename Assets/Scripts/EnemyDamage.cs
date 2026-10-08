@@ -48,11 +48,12 @@ public class EnemyDamage : MonoBehaviour
         if(collision.gameObject.tag == "Player")
         {
              isTouchingEnemy = true;
-             StartCoroutine(bulletDamage.BlinkEffect());
-             playerHealth.DecreaseHealth();
-             canvasControl.TakingDamage();
-             EnemyEffect.transform.position = EffectPos.position;
-             EnemyEffect.Play();
+             if (playerHealth.TakeDamage())
+             {
+                 StartCoroutine(bulletDamage.BlinkEffect());
+                 EnemyEffect.transform.position = EffectPos.position;
+                 EnemyEffect.Play();
+             }
         }
            
 
