@@ -98,6 +98,21 @@ public class StartScene : MonoBehaviour
         isPlay = true;
         Time.timeScale = 1f;
 
+        ProgressionSave.Data data = ProgressionSave.Load();
+        string targetScene = data.highestUnlockedLevel >= 2 ? "TwoScene" : "OneScene";
+
+        if (loaderPanel != null)
+            loaderPanel.LoadScene(targetScene);
+        else
+            SceneManager.LoadSceneAsync(targetScene);
+    }
+
+    public void StartFromBeginning()
+    {
+        if (isPlay) return;
+        isPlay = true;
+        Time.timeScale = 1f;
+
         if (loaderPanel != null)
             loaderPanel.LoadScene("OneScene");
         else
