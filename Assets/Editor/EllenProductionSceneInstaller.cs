@@ -385,6 +385,16 @@ public static class EllenProductionSceneInstaller
         GameplayBootstrap bootstrap = EnsureComponent<GameplayBootstrap>(productionRoot);
         HitStop hitStop = EnsureComponent<HitStop>(productionRoot);
         SpiritWorldPresentation spiritPresentation = EnsureComponent<SpiritWorldPresentation>(productionRoot);
+        LevelEntryConfigurator levelEntry = EnsureComponent<LevelEntryConfigurator>(productionRoot);
+
+        SerializedObject levelEntrySo = new SerializedObject(levelEntry);
+        bool isLevelTwo = SceneManager.GetActiveScene().name == "TwoScene";
+        levelEntrySo.FindProperty("levelNumber").intValue = isLevelTwo ? 2 : 1;
+        levelEntrySo.FindProperty("grantOnStart").intValue = isLevelTwo
+            ? (int)PlayerAbilityController.Ability.Dash
+            : (int)PlayerAbilityController.Ability.None;
+        levelEntrySo.FindProperty("abilities").objectReferenceValue = abilities;
+        levelEntrySo.ApplyModifiedPropertiesWithoutUndo();
 
         SerializedObject bootstrapSo = new SerializedObject(bootstrap);
         bootstrapSo.FindProperty("gameSession").objectReferenceValue = session;
@@ -538,6 +548,38 @@ public static class EllenProductionSceneInstaller
         objectiveSo.ApplyModifiedPropertiesWithoutUndo();
 
         objectiveVisual.SetActive(false);
+
+        GameObject abilityToast = CreateImage("AbilityToast", hudRect, new Color(0.025f, 0.035f, 0.055f, 0.92f));
+        RectTransform toastRect = abilityToast.GetComponent<RectTransform>();
+        toastRect.anchorMin = toastRect.anchorMax = new Vector2(0.5f, 1f);
+        toastRect.pivot = new Vector2(0.5f, 1f);
+        toastRect.anchoredPosition = new Vector2(0f, -30f);
+        toastRect.sizeDelta = new Vector2(560f, 108f);
+
+        CanvasGroup toastGroup = EnsureComponent<CanvasGroup>(abilityToast);
+        toastGroup.alpha = 0f;
+        toastGroup.interactable = false;
+        toastGroup.blocksRaycasts = false;
+
+        GameObject abilityTitle = CreateText("AbilityTitle", toastRect, "ABILITY UNLOCKED", 25f);
+        RectTransform abilityTitleRect = abilityTitle.GetComponent<RectTransform>();
+        abilityTitleRect.anchorMin = abilityTitleRect.anchorMax = new Vector2(0.5f, 1f);
+        abilityTitleRect.anchoredPosition = new Vector2(0f, -18f);
+        abilityTitleRect.sizeDelta = new Vector2(520f, 34f);
+
+        GameObject abilityDescription = CreateText("AbilityDescription", toastRect, "", 17f);
+        RectTransform abilityDescriptionRect = abilityDescription.GetComponent<RectTransform>();
+        abilityDescriptionRect.anchorMin = abilityDescriptionRect.anchorMax = new Vector2(0.5f, 0f);
+        abilityDescriptionRect.anchoredPosition = new Vector2(0f, 20f);
+        abilityDescriptionRect.sizeDelta = new Vector2(520f, 38f);
+
+        AbilityUnlockPresenter abilityPresenter = EnsureComponent<AbilityUnlockPresenter>(abilityToast);
+        SerializedObject abilitySo = new SerializedObject(abilityPresenter);
+        abilitySo.FindProperty("abilities").objectReferenceValue = abilities;
+        abilitySo.FindProperty("panel").objectReferenceValue = toastGroup;
+        abilitySo.FindProperty("title").objectReferenceValue = abilityTitle.GetComponent<TextMeshProUGUI>();
+        abilitySo.FindProperty("description").objectReferenceValue = abilityDescription.GetComponent<TextMeshProUGUI>();
+        abilitySo.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void AddPanelTransition(string panelName)
