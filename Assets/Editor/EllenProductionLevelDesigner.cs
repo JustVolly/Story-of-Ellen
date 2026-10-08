@@ -159,6 +159,10 @@ public static class EllenProductionLevelDesigner
         CreateBeat(root.transform, "Beat_DashChain", new Vector2(438f, -37f), director, VerticalSliceDirector.Beat.Combat);
         CreateBeat(root.transform, "Beat_FinalAscent", new Vector2(558f, -37f), director, VerticalSliceDirector.Beat.Traversal);
 
+        // The legacy map remains untouched. These authored stone steps make the
+        // two 40-unit shafts climbable and provide an optional elevated memory route.
+        CreateSpiritAscentTraversal(root.transform);
+
         CreateShrine(root.transform, "Shrine_01", new Vector2(72f, -39f));
         CreateWallJumpShaft(root.transform, "WallJumpShaft_01", 126f, -24f, 12f, 40f);
         CreateMemory(root.transform, "Memory_01_FirstAscent", new Vector2(126f, -6.5f));
@@ -192,6 +196,95 @@ public static class EllenProductionLevelDesigner
 
         CreateLandmarkParticles(root.transform, "AscentLandmark_01", new Vector2(126f, -8f), new Color(0.4f, 0.95f, 0.75f, 0.8f));
         CreateLandmarkParticles(root.transform, "AscentLandmark_02", new Vector2(585f, -8f), new Color(0.55f, 0.65f, 1f, 0.8f));
+    }
+
+
+    // Level 3: The Astral Crypt. These solid-looking one-way platforms turn
+    // two otherwise bare wall-jump columns into readable, recoverable ascents.
+    // They live under [LevelDesign] and are replaced on every campaign rebuild.
+    private static void CreateSpiritAscentTraversal(Transform parent)
+    {
+        const string stonePath = "Assets/Environment/Sprites/Crypt/Sprite_Wall_1_Color.png";
+        Sprite stone = AssetDatabase.LoadAssetAtPath<Sprite>(stonePath);
+        if (stone == null)
+            throw new System.InvalidOperationException(
+                "[Ellen Level 3] Required crypt stone sprite is missing: " + stonePath);
+
+        GameObject paths = CreateWorldObject(
+            "AstralCrypt_TraversalRoutes", parent, Vector2.zero);
+
+        CreateAscentLedges(paths.transform, stone, "FirstShaft", 126f);
+        CreateAscentLedges(paths.transform, stone, "FinalShaft", 585f);
+
+        // Upper balcony: rewards mastering the first shaft with a secret,
+        // while the safe ground route remains available to complete the level.
+        for (int i = 0; i < 8; i++)
+            CreateStoneLedge(paths.transform, stone, "Balcony_" + (i + 1),
+                new Vector2(145f + i * 14f, -9f - i * 1.5f),
+                new Vector2(7f, 0.7f), new Color(0.56f, 0.77f, 0.92f, 1f));
+
+        // A short optional climbing detour frames Memory 2 above the path.
+        for (int i = 0; i < 5; i++)
+            CreateStoneLedge(paths.transform, stone, "MemoryDetour_" + (i + 1),
+                new Vector2(337f + i * 7f, -39f + i * 3f),
+                new Vector2(6f, 0.65f), new Color(0.7f, 0.85f, 1f, 1f));
+
+        // The final descent carries the player visually toward the objective
+        // gate rather than asking for an uncontrolled 35-unit drop.
+        for (int i = 0; i < 7; i++)
+            CreateStoneLedge(paths.transform, stone, "FinalDescent_" + (i + 1),
+                new Vector2(604f + i * 12.5f, -9f - i * 3.5f),
+                new Vector2(7f, 0.7f), new Color(0.62f, 0.76f, 1f, 1f));
+
+        CreateLandmarkParticles(paths.transform, "BalconyDiscoveryGlow",
+            new Vector2(247f, -18f), new Color(0.65f, 0.75f, 1f, 0.75f));
+        CreateLandmarkParticles(paths.transform, "MemoryDetourGlow",
+            new Vector2(365f, -25f), new Color(0.4f, 0.95f, 0.85f, 0.75f));
+    }
+
+    private static void CreateAscentLedges(
+        Transform parent, Sprite stone, string prefix, float centerX)
+    {
+        // 12 landings, spaced by 3 world units, alternating left and right.
+        // No moving parts: the route stays solvable with touch, keyboard or pad.
+        for (int i = 0; i < 12; i++)
+        {
+            float x = centerX + (i % 2 == 0 ? -3.15f : 3.15f);
+            float y = -38f + i * 3f;
+            CreateStoneLedge(parent, stone, prefix + "_Ledge_" + (i + 1),
+                new Vector2(x, y), new Vector2(4.4f, 0.65f),
+                i % 3 == 0
+                    ? new Color(0.36f, 0.84f, 0.83f, 1f)
+                    : new Color(0.55f, 0.73f, 0.94f, 1f));
+        }
+    }
+
+    private static void CreateStoneLedge(
+        Transform parent, Sprite stone, string name,
+        Vector2 position, Vector2 size, Color tint)
+    {
+        GameObject ledge = CreateWorldObject(name, parent, position);
+
+        // One-way platforms let Ellen jump up through a landing and rest on it.
+        BoxCollider2D body = ledge.AddComponent<BoxCollider2D>();
+        body.size = size;
+        body.usedByEffector = true;
+        PlatformEffector2D effector = ledge.AddComponent<PlatformEffector2D>();
+        effector.useOneWay = true;
+        effector.surfaceArc = 160f;
+
+        GameObject face = new GameObject("CryptStoneVisual");
+        face.transform.SetParent(ledge.transform, false);
+        SpriteRenderer renderer = face.AddComponent<SpriteRenderer>();
+        renderer.sprite = stone;
+        renderer.sortingOrder = 12;
+        renderer.color = tint;
+        Vector2 naturalSize = stone.bounds.size;
+        if (naturalSize.x <= 0f || naturalSize.y <= 0f)
+            throw new System.InvalidOperationException(
+                "[Ellen Level 3] Crypt stone sprite has invalid bounds.");
+        face.transform.localScale = new Vector3(
+            size.x / naturalSize.x, size.y / naturalSize.y, 1f);
     }
 
     private static void ConfigureFlow(
