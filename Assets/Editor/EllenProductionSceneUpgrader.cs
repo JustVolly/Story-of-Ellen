@@ -43,6 +43,8 @@ public static class EllenProductionSceneUpgrader
             return;
         }
 
+        ConfigureCanvas(canvas);
+
         CanvasGroup group = Ensure<CanvasGroup>(canvas.gameObject);
         group.alpha = 1f;
         group.interactable = true;
@@ -135,7 +137,10 @@ public static class EllenProductionSceneUpgrader
 
         Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
         if (canvas != null)
+        {
+            ConfigureCanvas(canvas);
             BuildProductionHud(canvas, flow, spirit, abilities, damagePresenter, scene);
+        }
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -152,6 +157,7 @@ public static class EllenProductionSceneUpgrader
         hudRect.anchorMax = Vector2.one;
         hudRect.offsetMin = Vector2.zero;
         hudRect.offsetMax = Vector2.zero;
+        Ensure<SafeAreaFitter>(hud);
 
         GameObject objectivesPanel = CreatePanel("Objectives", hud.transform, new Vector2(22f, -22f), new Vector2(330f, 122f), false);
         TextMeshProUGUI memories = CreateText("Memories", objectivesPanel.transform, new Vector2(14f, -14f), "Memories 0/0");
@@ -343,6 +349,17 @@ public static class EllenProductionSceneUpgrader
         if (byName != null) return byName;
         try { return GameObject.FindGameObjectWithTag(tag); }
         catch { return null; }
+    }
+
+    private static void ConfigureCanvas(Canvas canvas)
+    {
+        CanvasScaler scaler = Ensure<CanvasScaler>(canvas.gameObject);
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0.5f;
+        scaler.referencePixelsPerUnit = 100f;
+        EditorUtility.SetDirty(scaler);
     }
 
     private static T Ensure<T>(GameObject target) where T : Component
