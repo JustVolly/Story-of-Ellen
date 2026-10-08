@@ -154,6 +154,16 @@ public static class EllenProductionSceneUpgrader
             }
         }
 
+        foreach (string panelName in new[] { "WinPanel", "LostPanel", "StopPanel" })
+        {
+            GameObject panel = FindSceneObjectByName(scene, panelName);
+            if (panel != null && panel.GetComponent<UIPanelTransition>() == null)
+            {
+                Debug.LogError("[Ellen Production] " + scene.name + " " + panelName + " missing UIPanelTransition.");
+                errors++;
+            }
+        }
+
         return errors;
     }
 
@@ -336,6 +346,10 @@ public static class EllenProductionSceneUpgrader
             BuildProductionHud(canvas, flow, spirit, abilities, damagePresenter, scene);
         }
 
+        ConfigurePanelTransition(scene, "WinPanel");
+        ConfigurePanelTransition(scene, "LostPanel");
+        ConfigurePanelTransition(scene, "StopPanel");
+
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
     }
@@ -513,6 +527,21 @@ public static class EllenProductionSceneUpgrader
         label.text = text;
         label.fontSize = fontSize;
         return label;
+    }
+
+    private static void ConfigurePanelTransition(Scene scene, string panelName)
+    {
+        GameObject panel = FindSceneObjectByName(scene, panelName);
+        if (panel == null) return;
+
+        CanvasGroup group = Ensure<CanvasGroup>(panel);
+        group.alpha = 1f;
+        group.interactable = true;
+        group.blocksRaycasts = true;
+
+        UIPanelTransition transition = Ensure<UIPanelTransition>(panel);
+        SetObjectReference(transition, "panel", panel.transform as RectTransform);
+        SetObjectReference(transition, "group", group);
     }
 
     private static GameObject FindPlayer()
