@@ -10,7 +10,7 @@ public class DamageBlinking : MonoBehaviour
     
     void Start()
     {
-      bulletDamage = FindObjectOfType<BulletDamage>();
+      bulletDamage = FindAnyObjectByType<BulletDamage>();
         
     }
 

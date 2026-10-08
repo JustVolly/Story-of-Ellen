@@ -15,8 +15,8 @@ public class PowerUps : MonoBehaviour
 
    private void Start() 
    {
-      defencePowerUp = FindObjectOfType<DefencePowerUp>();
-      trapofEnemy = FindObjectOfType<TrapofEnemy>();
+      defencePowerUp = FindAnyObjectByType<DefencePowerUp>();
+      trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
 
       CurrentDuration = PowerUpSettings.TotalDuration;
       

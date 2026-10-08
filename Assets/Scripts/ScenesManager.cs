@@ -96,15 +96,15 @@ public class ScenesManager : MonoBehaviour
    
     private void Awake()
     {
-        trapThorns = FindObjectOfType<TrapThorns>();    
-        trapofEnemy = FindObjectOfType<TrapofEnemy>();
-        playerMovement = FindObjectOfType<PlayerMovement>();    
+        trapThorns = FindAnyObjectByType<TrapThorns>();    
+        trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
+        playerMovement = FindAnyObjectByType<PlayerMovement>();    
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>(); 
-        levelUp = FindObjectOfType<LevelUp>();  
-        reloadAndPlayEffect = FindObjectOfType<ReloadAndPlayEffect>(); 
-        startScene = FindObjectOfType<StartScene>(); 
-        canvascontrol = FindObjectOfType<CanvasControl>();
-        enemyDamage = FindObjectOfType<EnemyDamage>();  
+        levelUp = FindAnyObjectByType<LevelUp>();  
+        reloadAndPlayEffect = FindAnyObjectByType<ReloadAndPlayEffect>(); 
+        startScene = FindAnyObjectByType<StartScene>(); 
+        canvascontrol = FindAnyObjectByType<CanvasControl>();
+        enemyDamage = FindAnyObjectByType<EnemyDamage>();  
         
         
         isbackpressHomeButton = false; 

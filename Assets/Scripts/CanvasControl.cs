@@ -58,13 +58,13 @@ public class CanvasControl : MonoBehaviour
         CurrentTime = Mathf.Max(1, TotalTime);
         Timer = 1f;
 
-        playerHealth = FindObjectOfType<PlayerHealth>();
-        eatingFruits = FindObjectOfType<EatingFruits>();
-        collectCoins = FindObjectOfType<CollectCoins>();
-        trapThorns = FindObjectOfType<TrapThorns>();
-        scenesManager = FindObjectOfType<ScenesManager>();
-        characterAttack = FindObjectOfType<CharacterAttack>();
-        levelUp = FindObjectOfType<LevelUp>();
+        playerHealth = FindAnyObjectByType<PlayerHealth>();
+        eatingFruits = FindAnyObjectByType<EatingFruits>();
+        collectCoins = FindAnyObjectByType<CollectCoins>();
+        trapThorns = FindAnyObjectByType<TrapThorns>();
+        scenesManager = FindAnyObjectByType<ScenesManager>();
+        characterAttack = FindAnyObjectByType<CharacterAttack>();
+        levelUp = FindAnyObjectByType<LevelUp>();
 
         if (AppleExperience != null) AppleExperience.text = "0";
         if (Times != null) Times.text = CurrentTime.ToString();

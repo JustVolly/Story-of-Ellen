@@ -11,7 +11,7 @@ public class ObjectiveBarrier : MonoBehaviour
 
     private void Awake()
     {
-        if (flow == null) flow = FindObjectOfType<LevelFlowController>();
+        if (flow == null) flow = FindAnyObjectByType<LevelFlowController>();
         if (blocker == null) blocker = GetComponent<Collider2D>();
     }
 

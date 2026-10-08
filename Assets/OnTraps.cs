@@ -29,7 +29,7 @@ public class OnTraps : MonoBehaviour
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>(); 
         canvasControl = GameObject.FindGameObjectWithTag("Canvas").GetComponent<CanvasControl>();
         playerMovement = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerMovement>();
-        defencePowerUp = FindObjectOfType<DefencePowerUp>();
+        defencePowerUp = FindAnyObjectByType<DefencePowerUp>();
         
         Onanimator = GetComponent<Animator>();
        

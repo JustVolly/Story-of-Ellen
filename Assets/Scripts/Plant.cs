@@ -49,9 +49,9 @@ namespace Plants
     private void Start()
     {
         
-        defencePowerUp = FindObjectOfType<DefencePowerUp>();
-        bulletDamage = FindObjectOfType<BulletDamage>();
-        powerUps = FindObjectOfType<PowerUps>();
+        defencePowerUp = FindAnyObjectByType<DefencePowerUp>();
+        bulletDamage = FindAnyObjectByType<BulletDamage>();
+        powerUps = FindAnyObjectByType<PowerUps>();
         StartTime = Time.time;
         PlantAnim = gameObject.GetComponent<Animator>();
 

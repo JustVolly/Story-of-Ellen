@@ -11,7 +11,7 @@ public class SpiritHudPresenter : MonoBehaviour
 
     private void Awake()
     {
-        if (spiritWorld == null) spiritWorld = FindObjectOfType<SpiritWorldController>();
+        if (spiritWorld == null) spiritWorld = FindAnyObjectByType<SpiritWorldController>();
     }
 
     private void OnEnable()

@@ -13,7 +13,7 @@ public class MainMenuSettingsController : MonoBehaviour
 
     private void Awake()
     {
-        if (startScene == null) startScene = FindObjectOfType<StartScene>();
+        if (startScene == null) startScene = FindAnyObjectByType<StartScene>();
         if (panelTransition == null && panel != null) panelTransition = panel.GetComponent<UIPanelTransition>();
 
         ProgressionSave.Data data = ProgressionSave.Load();

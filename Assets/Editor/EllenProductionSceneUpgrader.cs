@@ -61,7 +61,7 @@ public static class EllenProductionSceneUpgrader
         Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
         int errors = 0;
 
-        Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+        Canvas canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
             Debug.LogError("[Ellen Production] " + scene.name + " missing Canvas.");
@@ -74,7 +74,7 @@ public static class EllenProductionSceneUpgrader
             errors++;
         }
 
-        if (UnityEngine.Object.FindFirstObjectByType<StartScene>() == null)
+        if (UnityEngine.Object.FindAnyObjectByType<StartScene>() == null)
         {
             Debug.LogError("[Ellen Production] " + scene.name + " missing StartScene controller.");
             errors++;
@@ -124,7 +124,7 @@ public static class EllenProductionSceneUpgrader
             errors += RequireComponent<GameplayBootstrap>(root, scene.name);
         }
 
-        Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+        Canvas canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
             Debug.LogError("[Ellen Production] " + scene.name + " missing Canvas.");
@@ -197,7 +197,7 @@ public static class EllenProductionSceneUpgrader
     private static void UpgradeMainMenu(string path)
     {
         Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-        Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+        Canvas canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
             Debug.LogError("[Ellen Production] StartingScene has no Canvas.");
@@ -216,7 +216,7 @@ public static class EllenProductionSceneUpgrader
         if (title == null) title = FindRectTransform(canvas.transform, "StoryOfEllen (1)");
         SetObjectReference(presentation, "title", title);
 
-        StartScene controller = UnityEngine.Object.FindFirstObjectByType<StartScene>();
+        StartScene controller = UnityEngine.Object.FindAnyObjectByType<StartScene>();
         GameObject playObject = FindSceneObjectByName(scene, "Play");
         if (controller != null && playObject != null)
         {
@@ -289,7 +289,7 @@ public static class EllenProductionSceneUpgrader
         if (ground != null)
             SetInt(advancedMovement, "wallLayer", 1 << ground.layer);
 
-        ScenesManager legacyScenes = UnityEngine.Object.FindFirstObjectByType<ScenesManager>();
+        ScenesManager legacyScenes = UnityEngine.Object.FindAnyObjectByType<ScenesManager>();
         if (legacyScenes != null && legacyScenes.respawnPoint != null)
             SetObjectReference(respawn, "fallbackRespawnPoint", legacyScenes.respawnPoint);
 
@@ -301,7 +301,7 @@ public static class EllenProductionSceneUpgrader
         LevelFlowController flow = Ensure<LevelFlowController>(root);
         SetString(flow, "levelId", scene.name);
         SetInt(flow, "levelNumber", scene.name == "OneScene" ? 1 : 2);
-        int memoryCount = UnityEngine.Object.FindObjectsByType<MemoryFragment>(FindObjectsSortMode.None).Length;
+        int memoryCount = UnityEngine.Object.FindObjectsByType<MemoryFragment>().Length;
         SetInt(flow, "totalMemories", memoryCount);
         SetInt(flow, "requiredMemories", 0);
         SetInt(flow, "requiredSecrets", 0);
@@ -318,7 +318,7 @@ public static class EllenProductionSceneUpgrader
         CameraJuice cameraJuice = Ensure<CameraJuice>(presentationRoot);
         HitStop hitStop = Ensure<HitStop>(presentationRoot);
 
-        Camera mainCamera = Camera.main != null ? Camera.main : UnityEngine.Object.FindFirstObjectByType<Camera>();
+        Camera mainCamera = Camera.main != null ? Camera.main : UnityEngine.Object.FindAnyObjectByType<Camera>();
         if (mainCamera != null)
             SetObjectReference(cameraJuice, "cameraTransform", mainCamera.transform);
 
@@ -333,13 +333,13 @@ public static class EllenProductionSceneUpgrader
         SetObjectReference(spiritPresentation, "spiritWorld", spirit);
         SetObjectReference(spiritPresentation, "cameraJuice", cameraJuice);
         SetSpriteRendererArray(spiritPresentation, "tintedSprites",
-            UnityEngine.Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None)
+            UnityEngine.Object.FindObjectsByType<SpriteRenderer>()
                 .Where(x => x.name.IndexOf("Background", StringComparison.OrdinalIgnoreCase) >= 0
                          || x.name.IndexOf("Light", StringComparison.OrdinalIgnoreCase) >= 0)
                 .Distinct()
                 .ToArray());
 
-        Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+        Canvas canvas = UnityEngine.Object.FindAnyObjectByType<Canvas>();
         if (canvas != null)
         {
             ConfigureCanvas(canvas, new Vector2(1920f, 1080f));

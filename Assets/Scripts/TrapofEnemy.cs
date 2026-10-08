@@ -28,12 +28,12 @@ public class TrapofEnemy : MonoBehaviour
     private void Start()
     {
         playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>(); 
-        canvasControl = FindObjectOfType<CanvasControl>();
+        canvasControl = FindAnyObjectByType<CanvasControl>();
         playerMovement = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerMovement>();
-        defencePowerUp = FindObjectOfType<DefencePowerUp>();
+        defencePowerUp = FindAnyObjectByType<DefencePowerUp>();
         Sawanimator = GetComponent<Animator>();
-        bulletDamage = FindObjectOfType<BulletDamage>();
-        powerUps = FindObjectOfType<PowerUps>();
+        bulletDamage = FindAnyObjectByType<BulletDamage>();
+        powerUps = FindAnyObjectByType<PowerUps>();
       
        
     }

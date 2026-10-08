@@ -30,10 +30,10 @@ public class CollectableCoinManager : MonoBehaviour
 
         
         
-        collectCoins = FindObjectOfType<CollectCoins>();
+        collectCoins = FindAnyObjectByType<CollectCoins>();
         TotalApple = GameObject.FindGameObjectsWithTag("CollectableCoins").Length;
-        levelUp = FindObjectOfType<LevelUp>();
-        scenesManager = FindObjectOfType<ScenesManager>();
+        levelUp = FindAnyObjectByType<LevelUp>();
+        scenesManager = FindAnyObjectByType<ScenesManager>();
     }
 
     void Update() 

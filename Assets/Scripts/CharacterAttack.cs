@@ -20,8 +20,8 @@ public class CharacterAttack : MonoBehaviour
     private void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
-        if (playerMovement == null) playerMovement = FindObjectOfType<PlayerMovement>();
-        levelUp = FindObjectOfType<LevelUp>();
+        if (playerMovement == null) playerMovement = FindAnyObjectByType<PlayerMovement>();
+        levelUp = FindAnyObjectByType<LevelUp>();
 
         if (BulletParticle != null) BulletParticle.Stop();
 

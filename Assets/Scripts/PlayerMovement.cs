@@ -88,12 +88,12 @@ public class PlayerMovement : MonoBehaviour
         playerHealth = GetComponent<PlayerHealth>();
         advancedMovement = GetComponent<PlayerAdvancedMovement>();
 
-        scenesManager = FindObjectOfType<ScenesManager>();
-        trapThorns = FindObjectOfType<TrapThorns>();
-        boosterPowerUp = FindObjectOfType<BoosterPowerUp>();
-        levelUp = FindObjectOfType<LevelUp>();
-        powerUps = FindObjectOfType<PowerUps>();
-        trapofEnemy = FindObjectOfType<TrapofEnemy>();
+        scenesManager = FindAnyObjectByType<ScenesManager>();
+        trapThorns = FindAnyObjectByType<TrapThorns>();
+        boosterPowerUp = FindAnyObjectByType<BoosterPowerUp>();
+        levelUp = FindAnyObjectByType<LevelUp>();
+        powerUps = FindAnyObjectByType<PowerUps>();
+        trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
 
         if (myRigidbody != null) baseGravityScale = myRigidbody.gravityScale;
         maxJumps = Mathf.Max(1, maxJumps);

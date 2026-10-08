@@ -23,7 +23,7 @@ public sealed class AbilitySeal : MonoBehaviour
 
     private void Awake()
     {
-        if (spiritWorld == null) spiritWorld = FindObjectOfType<SpiritWorldController>();
+        if (spiritWorld == null) spiritWorld = FindAnyObjectByType<SpiritWorldController>();
         if (blockingCollider == null)
         {
             foreach (Collider2D candidate in GetComponents<Collider2D>())

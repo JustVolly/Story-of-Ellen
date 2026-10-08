@@ -24,7 +24,7 @@ public class StartScene : MonoBehaviour
 
     private void Awake()
     {
-        loaderPanel = FindObjectOfType<LoaderPanel>();
+        loaderPanel = FindAnyObjectByType<LoaderPanel>();
     }
 
     private void Start()

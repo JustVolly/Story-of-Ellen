@@ -14,11 +14,11 @@ public class GameplayBootstrap : MonoBehaviour
 
     private void Awake()
     {
-        if (gameSession == null) gameSession = FindObjectOfType<GameSession>();
-        if (playerHealth == null) playerHealth = FindObjectOfType<PlayerHealth>();
-        if (abilities == null) abilities = FindObjectOfType<PlayerAbilityController>();
-        if (spiritWorld == null) spiritWorld = FindObjectOfType<SpiritWorldController>();
-        if (levelFlow == null) levelFlow = FindObjectOfType<LevelFlowController>();
+        if (gameSession == null) gameSession = FindAnyObjectByType<GameSession>();
+        if (playerHealth == null) playerHealth = FindAnyObjectByType<PlayerHealth>();
+        if (abilities == null) abilities = FindAnyObjectByType<PlayerAbilityController>();
+        if (spiritWorld == null) spiritWorld = FindAnyObjectByType<SpiritWorldController>();
+        if (levelFlow == null) levelFlow = FindAnyObjectByType<LevelFlowController>();
 
         ValidateScene();
     }

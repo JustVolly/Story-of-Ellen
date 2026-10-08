@@ -39,16 +39,16 @@ public class TrapThorns : MonoBehaviour
 
     void Start()
     {
-         playerMovement = FindObjectOfType<PlayerMovement>();
+         playerMovement = FindAnyObjectByType<PlayerMovement>();
          playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();    
          canvasControl = GameObject.FindGameObjectWithTag("Canvas").GetComponent<CanvasControl>();
          PlayerCapsuleCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<CapsuleCollider2D>();
          
 
-         trapofEnemy = FindObjectOfType<TrapofEnemy>();
-         scenesManager = FindObjectOfType<ScenesManager>();  
-         powerUp = FindObjectOfType<PowerUps>();
-         bulletDamage = FindObjectOfType<BulletDamage>();
+         trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
+         scenesManager = FindAnyObjectByType<ScenesManager>();  
+         powerUp = FindAnyObjectByType<PowerUps>();
+         bulletDamage = FindAnyObjectByType<BulletDamage>();
 
          Traps = GameObject.FindGameObjectsWithTag("Thorns");
          TrapsList.AddRange(Traps);

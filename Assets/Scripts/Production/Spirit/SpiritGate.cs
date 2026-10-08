@@ -18,7 +18,7 @@ public class SpiritGate : MonoBehaviour
 
     private void Awake()
     {
-        if (spiritWorld == null) spiritWorld = FindObjectOfType<SpiritWorldController>();
+        if (spiritWorld == null) spiritWorld = FindAnyObjectByType<SpiritWorldController>();
         if (blockingCollider == null) blockingCollider = GetComponent<Collider2D>();
         if (visual == null) visual = GetComponent<SpriteRenderer>();
     }

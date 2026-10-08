@@ -29,7 +29,7 @@ public sealed class EllenGameplayInput : MonoBehaviour
         if (abilities == null) abilities = GetComponent<PlayerAbilityController>();
         if (attack == null) attack = GetComponent<CharacterAttack>();
         if (health == null) health = GetComponent<PlayerHealth>();
-        if (scenesManager == null) scenesManager = FindObjectOfType<ScenesManager>();
+        if (scenesManager == null) scenesManager = FindAnyObjectByType<ScenesManager>();
     }
 
     private void Update()

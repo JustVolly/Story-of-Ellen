@@ -14,7 +14,7 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
 
     private void Awake()
     {
-        if (flow == null) flow = FindObjectOfType<LevelFlowController>();
+        if (flow == null) flow = FindAnyObjectByType<LevelFlowController>();
     }
 
     private void OnEnable()

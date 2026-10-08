@@ -25,12 +25,12 @@ public class EnemyDamage : MonoBehaviour
     private void Start() 
     {
         TouchCount = 0;
-        playerHealth = FindObjectOfType<PlayerHealth>();    
-        canvasControl = FindObjectOfType<CanvasControl>();
-        defencePowerUp = FindObjectOfType<DefencePowerUp>();  
-        playerBulletDamage = FindObjectOfType<PlayerBulletDamage>();
-        bulletDamage = FindObjectOfType<BulletDamage>();
-        powerUps = FindObjectOfType<PowerUps>();
+        playerHealth = FindAnyObjectByType<PlayerHealth>();    
+        canvasControl = FindAnyObjectByType<CanvasControl>();
+        defencePowerUp = FindAnyObjectByType<DefencePowerUp>();  
+        playerBulletDamage = FindAnyObjectByType<PlayerBulletDamage>();
+        bulletDamage = FindAnyObjectByType<BulletDamage>();
+        powerUps = FindAnyObjectByType<PowerUps>();
 
 
 

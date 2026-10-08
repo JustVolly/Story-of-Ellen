@@ -9,7 +9,7 @@ public class LevelCompletionTrigger : MonoBehaviour
     {
         BoxCollider2D zone = GetComponent<BoxCollider2D>();
         zone.isTrigger = true;
-        if (flow == null) flow = FindObjectOfType<LevelFlowController>();
+        if (flow == null) flow = FindAnyObjectByType<LevelFlowController>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)

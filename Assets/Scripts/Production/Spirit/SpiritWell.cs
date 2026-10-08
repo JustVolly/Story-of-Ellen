@@ -20,7 +20,7 @@ public sealed class SpiritWell : MonoBehaviour
 
     private void Awake()
     {
-        if (spiritWorld == null) spiritWorld = FindObjectOfType<SpiritWorldController>();
+        if (spiritWorld == null) spiritWorld = FindAnyObjectByType<SpiritWorldController>();
         Collider2D zone = GetComponent<Collider2D>();
         zone.isTrigger = true;
     }

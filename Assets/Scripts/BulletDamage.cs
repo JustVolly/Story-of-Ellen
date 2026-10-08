@@ -35,14 +35,14 @@ public class BulletDamage : MonoBehaviour
     private void Start()
     {
         CharacterSprite = GameObject.FindGameObjectWithTag("Player").GetComponent<SpriteRenderer>();
-        playerHealth = FindObjectOfType<PlayerHealth>();
-        canvasControl = FindObjectOfType<CanvasControl>(); 
-        defencePowerUp = FindObjectOfType<DefencePowerUp>();
-        powerUps = FindObjectOfType<PowerUps>(); 
-        plant = FindObjectOfType<Plant>();
-        damageBlinking = FindObjectOfType<DamageBlinking>();    
-        playerMovement = FindObjectOfType<PlayerMovement>();    
-        trapofEnemy = FindObjectOfType<TrapofEnemy>();  
+        playerHealth = FindAnyObjectByType<PlayerHealth>();
+        canvasControl = FindAnyObjectByType<CanvasControl>(); 
+        defencePowerUp = FindAnyObjectByType<DefencePowerUp>();
+        powerUps = FindAnyObjectByType<PowerUps>(); 
+        plant = FindAnyObjectByType<Plant>();
+        damageBlinking = FindAnyObjectByType<DamageBlinking>();    
+        playerMovement = FindAnyObjectByType<PlayerMovement>();    
+        trapofEnemy = FindAnyObjectByType<TrapofEnemy>();  
     }
 
    

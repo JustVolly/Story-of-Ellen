@@ -15,7 +15,7 @@ public class PlayerBulletDamage : MonoBehaviour
 
     private void Start()
     {
-        enemyDamage = FindObjectOfType<EnemyDamage>();
+        enemyDamage = FindAnyObjectByType<EnemyDamage>();
       
         if (scriptableObject != null) scriptableObject.experience = 7;
     }

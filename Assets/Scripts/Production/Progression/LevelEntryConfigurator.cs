@@ -8,7 +8,7 @@ public class LevelEntryConfigurator : MonoBehaviour
 
     private void Start()
     {
-        if (abilities == null) abilities = FindObjectOfType<PlayerAbilityController>();
+        if (abilities == null) abilities = FindAnyObjectByType<PlayerAbilityController>();
 
         ProgressionSave.Data data = ProgressionSave.Load();
         data.highestUnlockedLevel = Mathf.Max(data.highestUnlockedLevel, levelNumber);

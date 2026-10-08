@@ -27,7 +27,7 @@ public class ReloadAndPlayEffect : MonoBehaviour
  
 private void Awake() 
     {
-        scenesManager = FindObjectOfType<ScenesManager>(); 
+        scenesManager = FindAnyObjectByType<ScenesManager>(); 
     }
    void Start() 
    { 

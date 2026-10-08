@@ -20,8 +20,8 @@ public class LevelUp : MonoBehaviour
 
     private void Awake()
     {
-        playerMovement = FindObjectOfType<PlayerMovement>();
-        levelFlow = FindObjectOfType<LevelFlowController>();
+        playerMovement = FindAnyObjectByType<PlayerMovement>();
+        levelFlow = FindAnyObjectByType<LevelFlowController>();
 
         if (PlayerRigid == null && playerMovement != null)
             PlayerRigid = playerMovement.GetComponent<Rigidbody2D>();

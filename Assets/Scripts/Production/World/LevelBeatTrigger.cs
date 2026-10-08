@@ -14,7 +14,7 @@ public class LevelBeatTrigger : MonoBehaviour
         BoxCollider2D zone = GetComponent<BoxCollider2D>();
         zone.isTrigger = true;
 
-        if (director == null) director = FindObjectOfType<VerticalSliceDirector>();
+        if (director == null) director = FindAnyObjectByType<VerticalSliceDirector>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)

@@ -22,8 +22,8 @@ public class CollectCoins : MonoBehaviour
 
     private void Start()
     {
-        canvasControl = FindObjectOfType<CanvasControl>();
-        collectableCoinManager = FindObjectOfType<CollectableCoinManager>();
+        canvasControl = FindAnyObjectByType<CanvasControl>();
+        collectableCoinManager = FindAnyObjectByType<CollectableCoinManager>();
 
         Coins = GameObject.FindGameObjectsWithTag("CollectableCoins");
         CoinsList.AddRange(Coins);  

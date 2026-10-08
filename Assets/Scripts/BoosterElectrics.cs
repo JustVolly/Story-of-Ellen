@@ -23,7 +23,7 @@ public class BoosterElectrics : MonoBehaviour
       CurrentDuration = PowerUpSettings.TotalDuration;
       ElectricEffect.gameObject.SetActive(false);
       
-      boosterPowerUp = FindObjectOfType<BoosterPowerUp>();
+      boosterPowerUp = FindAnyObjectByType<BoosterPowerUp>();
 
       
 

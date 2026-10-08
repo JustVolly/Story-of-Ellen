@@ -11,7 +11,7 @@ public class DefencePowerUp : MonoBehaviour
 
     private void Start() 
     {
-       trapofEnemy = FindObjectOfType<TrapofEnemy>();
+       trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
 
     }
    void OnTriggerEnter2D(Collider2D other) 
