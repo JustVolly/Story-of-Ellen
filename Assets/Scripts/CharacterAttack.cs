@@ -32,7 +32,7 @@ public class CharacterAttack : MonoBehaviour
 
     public void AttackStart()
     {
-        if (levelUp != null && levelUp.isFinish) return;
+        if (Time.timeScale <= 0f || (levelUp != null && levelUp.isFinish)) return;
         if (CurrentBullet <= 0) return;
 
         if (playerMovement == null || Bullet == null || FirePoint == null)
