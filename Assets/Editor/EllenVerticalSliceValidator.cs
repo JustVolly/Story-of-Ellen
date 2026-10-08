@@ -28,6 +28,7 @@ public static class EllenVerticalSliceValidator
         errors += ValidateBuildScene("StartingScene");
         errors += ValidateBuildScene("OneScene");
         errors += ValidateBuildScene("TwoScene");
+        errors += ValidateBuildScene("ThreeScene");
 
         if (errors == 0)
             Debug.Log($"[Ellen Production] PASS — {scene.name} has no static production-readiness errors.");
@@ -112,6 +113,20 @@ public static class EllenVerticalSliceValidator
             errors += RequireCount<DashBreakableBarrier>(2, "DashBreakableBarrier");
             errors += RequireCount<BossController>(1, "BossController");
             errors += RequireCount<BossArenaController>(1, "BossArenaController");
+            errors += RequireCount<LevelCompletionTrigger>(1, "LevelCompletionTrigger");
+        }
+
+        if (sceneName == "ThreeScene")
+        {
+            errors += RequireNamedObject("Dash");
+            errors += RequireNamedObject("WallJump");
+            errors += RequireNamedObject("WallJumpShaft_01");
+            errors += RequireNamedObject("WallJumpShaft_02");
+            errors += RequireCount<MemoryFragment>(3, "MemoryFragment");
+            errors += RequireCount<SpiritShrine>(2, "SpiritShrine");
+            errors += RequireCount<SpiritGate>(1, "SpiritGate");
+            errors += RequireCount<DashBreakableBarrier>(1, "DashBreakableBarrier");
+            errors += RequireCount<ObjectiveBarrier>(1, "ObjectiveBarrier");
             errors += RequireCount<LevelCompletionTrigger>(1, "LevelCompletionTrigger");
         }
 
