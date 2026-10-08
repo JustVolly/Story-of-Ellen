@@ -1,32 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CollectableBullets : MonoBehaviour
 {
-     CharacterAttack characterAttack;
-     CanvasControl canvasControl;
+    [SerializeField, Min(1)] private int ammoAmount = 1;
+    [SerializeField] private bool increaseCapacity = true;
 
-     private void Start() 
-     {
-        characterAttack = FindObjectOfType<CharacterAttack>();
-        canvasControl = FindObjectOfType<CanvasControl>();
-     }
-
-
-  void OnTriggerEnter2D(Collider2D other) 
-  {
-    if (other.gameObject.tag == "Player")
+    private void OnTriggerEnter2D(Collider2D other)
     {
-       characterAttack.CurrentBullet += 1;         
-       characterAttack.NumberConfinerofBullet += 1;
-       canvasControl.IncreaseBullet(characterAttack.CurrentBullet);
-        
-        
-        
+        if (!other.CompareTag("Player")) return;
 
+        CharacterAttack attack = other.GetComponent<CharacterAttack>();
+        if (attack == null) return;
+
+        attack.AddAmmo(ammoAmount, increaseCapacity);
         Destroy(gameObject);
     }
-  }
-   
 }
