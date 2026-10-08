@@ -178,7 +178,7 @@ public class PlayerMovement : MonoBehaviour
         if (jumpBufferCounter <= 0f || playerHealth == null || !playerHealth.isAlive) return;
         if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
 
-        bool groundedJump = isGround || coyoteCounter > 0f;
+        bool groundedJump = isGround || (coyoteCounter > 0f && jumpsUsed == 0);
         bool airJump = !groundedJump && jumpsUsed < maxJumps;
 
         if (!groundedJump && !airJump) return;
