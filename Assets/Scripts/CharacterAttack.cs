@@ -26,7 +26,7 @@ public class CharacterAttack : MonoBehaviour
     private void Start() 
     {
         playerMovement = FindObjectOfType<PlayerMovement>();
-        CanvasControl canvasControl = FindObjectOfType<CanvasControl>();
+        canvasControl = FindObjectOfType<CanvasControl>();
         levelUp = FindObjectOfType<LevelUp>();
         BulletParticle.Stop();
         CurrentBullet = AllBullet;
