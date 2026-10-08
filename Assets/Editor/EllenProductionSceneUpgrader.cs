@@ -135,13 +135,13 @@ public static class EllenProductionSceneUpgrader
 
         Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
         if (canvas != null)
-            BuildProductionHud(canvas, flow, spirit, abilities, scene);
+            BuildProductionHud(canvas, flow, spirit, abilities, damagePresenter, scene);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
     }
 
-    private static void BuildProductionHud(Canvas canvas, LevelFlowController flow, SpiritWorldController spirit, PlayerAbilityController abilities, Scene scene)
+    private static void BuildProductionHud(Canvas canvas, LevelFlowController flow, SpiritWorldController spirit, PlayerAbilityController abilities, PlayerDamagePresenter damagePresenter, Scene scene)
     {
         Transform existing = canvas.transform.Find("ProductionHUD");
         if (existing != null) return;
@@ -158,8 +158,9 @@ public static class EllenProductionSceneUpgrader
         TextMeshProUGUI secrets = CreateText("Secrets", objectivesPanel.transform, new Vector2(14f, -48f), "Secrets 0/0");
         TextMeshProUGUI boss = CreateText("Boss", objectivesPanel.transform, new Vector2(14f, -82f), "Defeat the Guardian");
 
-        ObjectiveTrackerPresenter tracker = Ensure<ObjectiveTrackerPresenter>(objectivesPanel);
+        ObjectiveTrackerPresenter tracker = Ensure<ObjectiveTrackerPresenter>(hud);
         SetObjectReference(tracker, "flow", flow);
+        SetObjectReference(tracker, "root", objectivesPanel);
         SetObjectReference(tracker, "memoriesText", memories);
         SetObjectReference(tracker, "secretsText", secrets);
         SetObjectReference(tracker, "bossText", boss);
@@ -209,13 +210,53 @@ public static class EllenProductionSceneUpgrader
         SetObjectReference(spiritHud, "activeIndicator", indicator);
         SetObjectReference(spiritHud, "stateText", state);
 
-        GameObject spiritButtonObject = CreatePanel("SpiritButton", hud.transform, new Vector2(-28f, 28f), new Vector2(150f, 58f), true, false);
+        GameObject spiritButtonObject = CreatePanel("SpiritButton", hud.transform, new Vector2(-70f, 92f), new Vector2(150f, 54f), true, false);
         Button spiritButton = spiritButtonObject.AddComponent<Button>();
         spiritButton.targetGraphic = spiritButtonObject.GetComponent<Image>();
         spiritButton.navigation = new Navigation { mode = Navigation.Mode.None };
         TextMeshProUGUI buttonText = CreateCenteredText("Label", spiritButtonObject.transform, "SPIRIT");
         buttonText.fontSize = 19f;
         UnityEventTools.AddPersistentListener(spiritButton.onClick, abilities.TryToggleSpirit);
+
+        GameObject tutorialPanel = CreateUiObject("SpiritTutorial", hud.transform);
+        RectTransform tutorialRect = tutorialPanel.GetComponent<RectTransform>();
+        tutorialRect.anchorMin = new Vector2(0.5f, 1f);
+        tutorialRect.anchorMax = new Vector2(0.5f, 1f);
+        tutorialRect.pivot = new Vector2(0.5f, 1f);
+        tutorialRect.anchoredPosition = new Vector2(0f, -120f);
+        tutorialRect.sizeDelta = new Vector2(560f, 72f);
+        Image tutorialBackground = tutorialPanel.AddComponent<Image>();
+        tutorialBackground.sprite = BuiltinUiSprite();
+        tutorialBackground.color = new Color(0.03f, 0.045f, 0.07f, 0.92f);
+        CanvasGroup tutorialGroup = tutorialPanel.AddComponent<CanvasGroup>();
+        tutorialGroup.alpha = 0f;
+        tutorialGroup.blocksRaycasts = false;
+        tutorialGroup.interactable = false;
+        TextMeshProUGUI tutorialText = CreateCenteredText("Message", tutorialPanel.transform, "Spirit World reveals hidden paths.");
+        tutorialText.fontSize = 17f;
+
+        SpiritTutorialPresenter tutorialPresenter = Ensure<SpiritTutorialPresenter>(hud);
+        SetObjectReference(tutorialPresenter, "spiritWorld", spirit);
+        SetObjectReference(tutorialPresenter, "panel", tutorialGroup);
+        SetObjectReference(tutorialPresenter, "message", tutorialText);
+
+        GameObject deathOverlayObject = CreateUiObject("DeathOverlay", hud.transform);
+        RectTransform deathRect = deathOverlayObject.GetComponent<RectTransform>();
+        deathRect.anchorMin = Vector2.zero;
+        deathRect.anchorMax = Vector2.one;
+        deathRect.offsetMin = Vector2.zero;
+        deathRect.offsetMax = Vector2.zero;
+        Image deathImage = deathOverlayObject.AddComponent<Image>();
+        deathImage.sprite = BuiltinUiSprite();
+        deathImage.color = new Color(0.25f, 0.015f, 0.02f, 0.5f);
+        deathImage.raycastTarget = false;
+        CanvasGroup deathGroup = deathOverlayObject.AddComponent<CanvasGroup>();
+        deathGroup.alpha = 0f;
+        deathGroup.blocksRaycasts = false;
+        deathGroup.interactable = false;
+        SetObjectReference(damagePresenter, "deathOverlay", deathGroup);
+
+        deathOverlayObject.transform.SetAsFirstSibling();
 
         GameObject winPanel = FindSceneObjectByName(scene, "WinPanel");
         if (winPanel != null)
