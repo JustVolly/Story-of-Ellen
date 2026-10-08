@@ -18,6 +18,11 @@ public class BossAttackPattern : MonoBehaviour
     {
         if (boss == null) boss = GetComponent<BossController>();
         if (body == null) body = GetComponent<Rigidbody2D>();
+        if (player == null)
+        {
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+            if (playerObject != null) player = playerObject.transform;
+        }
     }
 
     private void OnEnable()
@@ -35,7 +40,7 @@ public class BossAttackPattern : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(attackInterval);
+            yield return new WaitForSeconds(Mathf.Max(0.1f, attackInterval));
             if (player == null || body == null || boss == null) continue;
 
             float direction = Mathf.Sign(player.position.x - transform.position.x);
