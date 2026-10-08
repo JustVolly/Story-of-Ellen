@@ -5,6 +5,7 @@ public static class ProgressionSave
 {
     private const string Key = "ellen.progress.v1";
     private const int CurrentVersion = 2;
+    private const int MaxPlayableLevel = 2;
 
     [Serializable]
     public class LevelRecord
@@ -98,7 +99,7 @@ public static class ProgressionSave
         if (RankValue(result.Rank) > RankValue(record.bestRank))
             record.bestRank = result.Rank;
 
-        data.highestUnlockedLevel = Mathf.Max(data.highestUnlockedLevel, result.LevelNumber + 1);
+        data.highestUnlockedLevel = Mathf.Clamp(Mathf.Max(data.highestUnlockedLevel, result.LevelNumber + 1), 1, MaxPlayableLevel);
 
         // Legacy aggregate fields stay valid for older UI/save consumers.
         if (data.bestCompletionTime <= 0f || result.CompletionTime < data.bestCompletionTime)
@@ -122,7 +123,7 @@ public static class ProgressionSave
     private static void Migrate(Data data)
     {
         if (data.levels == null) data.levels = Array.Empty<LevelRecord>();
-        data.highestUnlockedLevel = Mathf.Max(1, data.highestUnlockedLevel);
+        data.highestUnlockedLevel = Mathf.Clamp(data.highestUnlockedLevel, 1, MaxPlayableLevel);
         data.musicVolume = Mathf.Clamp01(data.musicVolume);
         data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
         data.version = CurrentVersion;
