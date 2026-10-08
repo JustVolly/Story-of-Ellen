@@ -122,7 +122,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        if (other.gameObject.tag == "Trap" && !trapofEnemy.isActiveDefence)
+        if (other.CompareTag("Trap") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
         {
            
            TrapEffect.Play();
@@ -138,7 +138,7 @@ public class PlayerMovement : MonoBehaviour
 
     void OnTriggerStay2D(Collider2D other) 
     {
-        if(other.gameObject.tag == "Trap" && trapofEnemy.isActiveDefence)
+        if (other.CompareTag("Trap") && (trapofEnemy.isActiveDefence || powerUps.DefenderEffect.isPlaying))
         {
             Debug.Log("IsDefence çaliştiği için fonk çikildi");
             return;
@@ -174,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
         if(collision.gameObject.tag == "Grounds")
         {
             isGround = true;
-            RemainingJumping = 2;
+            RemainingJumping = MaxJumping;
           
 
         }
