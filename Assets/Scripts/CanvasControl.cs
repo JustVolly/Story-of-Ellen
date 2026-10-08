@@ -1,215 +1,179 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class CanvasControl : MonoBehaviour
 {
-   public int GravityForPlayer = 1;
-   public float WaitAnimationDuration = 1.5f;
-
-   
-    TextMeshProUGUI  AppleExperience;
-    TextMeshProUGUI BulletStrawberry;
-
-    [SerializeField] TextMeshProUGUI Times;
-    [SerializeField] Image ClockFire;
+    [SerializeField] private TextMeshProUGUI Times;
+    [SerializeField] private Image ClockFire;
 
     [Header("Time")]
-    [SerializeField] int TotalTime = 180;
-    [SerializeField] int TimeSpeed = 1;
+    [SerializeField, Min(1)] private int TotalTime = 180;
+    [SerializeField, Min(1)] private int TimeSpeed = 1;
     public float Timer = 1f;
     public float DecreaseTimerFillAmount;
     public float DecreaseSpeed = 10f;
     public int CurrentTime;
-    
+
     [Header("Health Stars")]
     public Image Star1;
     public Image Star2;
     public Image Star3;
 
-    
+    [Header("Controls")]
+    [SerializeField] private Button Left;
+    [SerializeField] private Button Right;
+    [SerializeField] private Button Up;
+    [SerializeField] private Button Fire;
+    [SerializeField] private Button Stop;
 
+    private TextMeshProUGUI AppleExperience;
+    private TextMeshProUGUI BulletStrawberry;
+    private int exp_score;
 
+    private PlayerHealth playerHealth;
+    private EatingFruits eatingFruits;
+    private CollectCoins collectCoins;
+    private TrapThorns trapThorns;
+    private ScenesManager scenesManager;
+    private CharacterAttack characterAttack;
+    private LevelUp levelUp;
 
-    [SerializeField] Button Left;
-    [SerializeField] Button Right;
-    [SerializeField] Button Up;
-    [SerializeField] Button Fire;
-    [SerializeField] Button Stop;
-
-    
-
-  
-
-    
-
-    
-
-
-    int exp_score = 0;
-    int bullet_fired = 0;
-
-
-    PlayerHealth playerHealth;
-    PlayerMovement playerMovement;
-    TrapofEnemy trapofEnemy;
-    EatingFruits eatingFruits;
-    CollectCoins collectCoins;
-    TrapThorns trapThorns;
-    ScenesManager scenesManager;
-    BulletDamage bulletDamage;
-
-    EnemyDamage enemyDamage;
-
-    CharacterAttack characterAttack;
-    LevelUp levelUp;
-
-
-   void Awake() 
-   {
-            Star1.fillAmount = 1f;
-            Star2.fillAmount = 1f;
-            Star3.fillAmount = 1f;
-   }
-    void Start()
+    private void Awake()
     {
-        AppleExperience = GameObject.FindWithTag("StarExpUI").GetComponent<TextMeshProUGUI>();
-        BulletStrawberry = GameObject.FindWithTag("BulletCount").GetComponent<TextMeshProUGUI>();
-        Times = GameObject.FindWithTag("Tmer").GetComponent<TextMeshProUGUI>();
-        ClockFire = GameObject.FindWithTag("ClockFire").GetComponent<Image>();
+        SetStarFill(Star1, 1f);
+        SetStarFill(Star2, 1f);
+        SetStarFill(Star3, 1f);
+    }
 
-        
+    private void Start()
+    {
+        AppleExperience = FindTaggedComponent<TextMeshProUGUI>("StarExpUI");
+        BulletStrawberry = FindTaggedComponent<TextMeshProUGUI>("BulletCount");
 
-        CurrentTime = TotalTime;
-        
+        if (Times == null) Times = FindTaggedComponent<TextMeshProUGUI>("Tmer");
+        if (ClockFire == null) ClockFire = FindTaggedComponent<Image>("ClockFire");
+
+        CurrentTime = Mathf.Max(1, TotalTime);
+        Timer = 1f;
+
         playerHealth = FindObjectOfType<PlayerHealth>();
-        trapofEnemy = FindObjectOfType<TrapofEnemy>();
         eatingFruits = FindObjectOfType<EatingFruits>();
         collectCoins = FindObjectOfType<CollectCoins>();
         trapThorns = FindObjectOfType<TrapThorns>();
-        playerMovement = FindObjectOfType<PlayerMovement>();  
-        scenesManager = FindObjectOfType<ScenesManager>(); 
-        bulletDamage = FindObjectOfType<BulletDamage>();  
-        enemyDamage = FindObjectOfType<EnemyDamage>();
+        scenesManager = FindObjectOfType<ScenesManager>();
         characterAttack = FindObjectOfType<CharacterAttack>();
         levelUp = FindObjectOfType<LevelUp>();
 
-         AppleExperience.text = 0.ToString();  
-         BulletStrawberry.text = characterAttack.CurrentBullet.ToString(); 
-         Times.text = CurrentTime.ToString();
-         ClockFire.fillAmount = 1;
-         playerHealth.HealthChanged += OnHealthChanged;
-         SyncHealthUI();
+        if (AppleExperience != null) AppleExperience.text = "0";
+        if (Times != null) Times.text = CurrentTime.ToString();
+        if (ClockFire != null) ClockFire.fillAmount = 1f;
 
+        if (playerHealth != null)
+        {
+            playerHealth.HealthChanged += OnHealthChanged;
+            SyncHealthUI();
+        }
+
+        if (characterAttack != null)
+        {
+            characterAttack.AmmoChanged += OnAmmoChanged;
+            OnAmmoChanged(characterAttack.CurrentBullet, characterAttack.NumberConfinerofBullet);
+        }
+
+        UpdateControls();
     }
 
     private void OnDestroy()
     {
         if (playerHealth != null) playerHealth.HealthChanged -= OnHealthChanged;
+        if (characterAttack != null) characterAttack.AmmoChanged -= OnAmmoChanged;
+    }
+
+    private void Update()
+    {
+        CanvasTimer();
+        UpdateControls();
     }
 
     private void OnHealthChanged(int current, int max)
     {
         SyncHealthUI();
+        UpdateControls();
     }
 
-    private void Update()
+    private void OnAmmoChanged(int current, int max)
     {
-       DecreaseBullet(characterAttack.CurrentBullet);
-       
-       CanvasTimer();
-      
-
-        bool controlsEnabled = playerHealth.isAlive;
-        Left.interactable = controlsEnabled;
-        Right.interactable = controlsEnabled;
-        Up.interactable = controlsEnabled;
-        Fire.interactable = controlsEnabled;
-        Stop.interactable = controlsEnabled;
-
-        
-        
+        if (BulletStrawberry != null)
+            BulletStrawberry.text = current.ToString();
     }
 
     public void CanvasTimer()
     {
-       if(playerHealth.currenthealth <= 0 || levelUp.isFinish || Time.timeScale == 0 || playerMovement.isOutOfViewCamera)
-       {
-         return;
-       }
-       
-       if (!scenesManager.isPressStopButton && playerHealth.currenthealth > 0)
-       {
-           CurrentTime = Mathf.Clamp(CurrentTime, 0, TotalTime);
-           Timer -= Time.deltaTime * TimeSpeed;
-       }
+        if (playerHealth == null || !playerHealth.isAlive || (levelUp != null && levelUp.isFinish) || Time.timeScale <= 0f)
+            return;
 
-       
-       
-       
-       if (Timer <= 0f)
-       {
-          CurrentTime--;
-          Times.text = CurrentTime.ToString();
-    
-   
-          DecreaseTimerFillAmount = 1f / Mathf.Max(1, TotalTime);
-          ClockFire.fillAmount = Mathf.Clamp01(ClockFire.fillAmount - DecreaseTimerFillAmount);
+        if (scenesManager != null && scenesManager.isPressStopButton)
+            return;
 
-          Timer = 1f;
-       }  
+        Timer -= Time.deltaTime * Mathf.Max(1, TimeSpeed);
 
-       if (CurrentTime == 0 || CurrentTime < 0)
-       {
-           playerHealth.Kill();
-           
+        bool changed = false;
+        while (Timer <= 0f && CurrentTime > 0)
+        {
+            CurrentTime--;
+            Timer += 1f;
+            changed = true;
+        }
 
-       }
+        if (changed && Times != null)
+            Times.text = CurrentTime.ToString();
 
+        DecreaseTimerFillAmount = 1f / Mathf.Max(1, TotalTime);
+        if (ClockFire != null)
+            ClockFire.fillAmount = Mathf.Clamp01((float)CurrentTime / Mathf.Max(1, TotalTime));
 
+        if (CurrentTime <= 0)
+            playerHealth.Kill();
+    }
+
+    private void UpdateControls()
+    {
+        bool enabled = playerHealth == null || playerHealth.isAlive;
+        SetInteractable(Left, enabled);
+        SetInteractable(Right, enabled);
+        SetInteractable(Up, enabled);
+        SetInteractable(Fire, enabled);
+        SetInteractable(Stop, enabled);
     }
 
     public void DecreaseBullet(int amount)
     {
-        bullet_fired = amount;
-        
-        BulletStrawberry.text = bullet_fired.ToString();
-
+        if (BulletStrawberry != null) BulletStrawberry.text = Mathf.Max(0, amount).ToString();
     }
 
     public void IncreaseBullet(int amount)
     {
-         
-        BulletStrawberry.text = amount.ToString();
+        if (BulletStrawberry != null) BulletStrawberry.text = Mathf.Max(0, amount).ToString();
     }
-
 
     public void IncreaseExperience()
     {
+        if (collectCoins == null || AppleExperience == null) return;
         exp_score += collectCoins.experienceValue;
         AppleExperience.text = exp_score.ToString();
     }
 
     public void IncreaseHealth()
     {
-        if (eatingFruits.isEating)
-        {
-            playerHealth.Heal();
-            SyncHealthUI();
-        }
+        if (eatingFruits == null || playerHealth == null || !eatingFruits.isEating) return;
+        playerHealth.Heal();
     }
 
     public void FillHealth()
     {
-        if (scenesManager.isRespawn)
-        {
+        if (scenesManager != null && scenesManager.isRespawn && playerHealth != null)
             playerHealth.ResetHealth();
-        }
-
-        SyncHealthUI();
     }
 
     public void TakingDamage()
@@ -219,26 +183,39 @@ public class CanvasControl : MonoBehaviour
 
     private void SyncHealthUI()
     {
-        if (playerHealth == null)
-        {
-            return;
-        }
+        if (playerHealth == null) return;
 
-        Star1.fillAmount = playerHealth.currenthealth >= 3 ? 1f : 0f;
-        Star2.fillAmount = playerHealth.currenthealth >= 2 ? 1f : 0f;
-        Star3.fillAmount = playerHealth.currenthealth >= 1 ? 1f : 0f;
+        SetStarFill(Star1, playerHealth.currenthealth >= 3 ? 1f : 0f);
+        SetStarFill(Star2, playerHealth.currenthealth >= 2 ? 1f : 0f);
+        SetStarFill(Star3, playerHealth.currenthealth >= 1 ? 1f : 0f);
     }
 
     public void DieImmediate()
     {
-        
-        if (trapThorns.isTouchingthorn)
-        {
-            playerHealth.Kill();
-        }
-
-
+        if (trapThorns != null && trapThorns.isTouchingthorn)
+            playerHealth?.Kill();
     }
 
-    
+    private static T FindTaggedComponent<T>(string tag) where T : Component
+    {
+        try
+        {
+            GameObject target = GameObject.FindWithTag(tag);
+            return target != null ? target.GetComponent<T>() : null;
+        }
+        catch (UnityException)
+        {
+            return null;
+        }
+    }
+
+    private static void SetStarFill(Image image, float value)
+    {
+        if (image != null) image.fillAmount = value;
+    }
+
+    private static void SetInteractable(Selectable selectable, bool value)
+    {
+        if (selectable != null) selectable.interactable = value;
+    }
 }
