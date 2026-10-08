@@ -38,7 +38,8 @@ public class StartScene : MonoBehaviour
         ProgressionSave.Data data = ProgressionSave.Load();
         bool canContinue = data.highestUnlockedLevel >= 2;
 
-        if (playLabel != null) playLabel.text = canContinue ? "CONTINUE" : "PLAY";
+        if (playLabel != null)
+            playLabel.text = data.campaignCompleted ? "REPLAY LEVEL 2" : canContinue ? "CONTINUE" : "PLAY";
         if (replayLevelOneButton != null) replayLevelOneButton.SetActive(canContinue);
     }
 
@@ -123,6 +124,25 @@ public class StartScene : MonoBehaviour
     public void StartFromBeginning()
     {
         if (isPlay) return;
+        isPlay = true;
+        Time.timeScale = 1f;
+
+        if (loaderPanel != null)
+            loaderPanel.LoadScene("OneScene");
+        else
+            SceneManager.LoadSceneAsync("OneScene");
+    }
+
+    public void StartNewJourney()
+    {
+        if (isPlay) return;
+
+        ProgressionSave.Data data = ProgressionSave.Load();
+        data.highestUnlockedLevel = 1;
+        data.campaignCompleted = false;
+        data.unlockedAbilities = (int)PlayerAbilityController.Ability.SpiritWorld;
+        ProgressionSave.Save(data);
+
         isPlay = true;
         Time.timeScale = 1f;
 
