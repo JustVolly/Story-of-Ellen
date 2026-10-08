@@ -43,7 +43,10 @@ public static class EllenCampaignContentBuilder
             foreach (string path in GameplayScenes)
             {
                 Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-                EllenProductionLevelDesigner.ApplyToActiveScene(); // idempotent
+                // Rebuild generated gameplay so geometry changes (such as
+                // taller ascent shafts) are applied even on an older baked scene.
+                // Only [LevelDesign]/BossHUD are replaced; legacy terrain is kept.
+                EllenProductionLevelDesigner.RebuildCurrentLevelDesign();
                 EllenLevelArtBuilder.Build(scene); // replace generated scenery only
 
                 int problems = ValidateLoadedScene(scene);
