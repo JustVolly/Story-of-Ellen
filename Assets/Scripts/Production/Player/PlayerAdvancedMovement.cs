@@ -58,8 +58,19 @@ public class PlayerAdvancedMovement : MonoBehaviour
 
     private void OnDisable()
     {
-        if (IsDashing)
-            EndDash();
+        if (dashActive) EndDash();
+    }
+
+    /// <summary>Clear dash and wall-jump overrides before a checkpoint respawn.</summary>
+    public void ResetForRespawn()
+    {
+        bool wasDashing = dashActive;
+        dashTimer = 0f;
+        dashActive = false;
+        cooldownTimer = 0f;
+        legacyMovementLockTimer = 0f;
+        if (body != null) body.gravityScale = originalGravity;
+        if (wasDashing) DashEnded?.Invoke();
     }
 
     public void SetFacing(bool right) => facingRight = right;
