@@ -107,7 +107,7 @@ public static class EllenProductionSceneInstaller
             if (button != null)
             {
                 button.onClick = new Button.ButtonClickedEvent();
-                UnityEventTools.AddPersistentListener(button.onClick, startScene.StartFromBeginning);
+                UnityEventTools.AddPersistentListener(button.onClick, startScene.StartNewJourney);
             }
 
             newJourney.SetActive(false);
