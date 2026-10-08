@@ -40,8 +40,8 @@ public class BossController : MonoBehaviour
         Phase next = ratio <= 0.33f ? Phase.Three : ratio <= 0.66f ? Phase.Two : Phase.One;
         if (next == CurrentPhase) return;
         CurrentPhase = next;
-        if (next >= Phase.Two) Activate(phaseTwoObjects);
-        if (next >= Phase.Three) Activate(phaseThreeObjects);
+        if ((int)next >= (int)Phase.Two) Activate(phaseTwoObjects);
+        if ((int)next >= (int)Phase.Three) Activate(phaseThreeObjects);
         PhaseChanged?.Invoke(next);
     }
 
