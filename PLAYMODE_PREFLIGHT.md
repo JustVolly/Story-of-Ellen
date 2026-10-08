@@ -4,7 +4,7 @@ Run this after Unity finishes importing the branch and before tuning gameplay.
 
 ## Import and compile
 - Confirm Console has zero compile errors.
-- Commit every Unity-generated .meta file under Assets/Scripts/Production and Assets/Editor before wiring scene references.
+- Confirm the committed .meta files under Assets/Scripts/Production and Assets/Editor import without GUID conflicts or missing-meta errors.
 - Open OneScene and run Ellen > Validate Vertical Slice.
 
 ## Player lifecycle
