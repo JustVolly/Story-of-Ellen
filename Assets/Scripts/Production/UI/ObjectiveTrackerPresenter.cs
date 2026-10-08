@@ -11,6 +11,11 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
 
     private GameSession session;
 
+    private void Awake()
+    {
+        if (flow == null) flow = FindObjectOfType<LevelFlowController>();
+    }
+
     private void OnEnable()
     {
         if (flow != null) flow.ObjectivesChanged += Refresh;
