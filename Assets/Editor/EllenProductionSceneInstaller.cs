@@ -404,7 +404,7 @@ public static class EllenProductionSceneInstaller
         feedbackSo.ApplyModifiedPropertiesWithoutUndo();
 
         if (canvas != null)
-            EnsureProductionHud(canvas, spirit);
+            EnsureProductionHud(canvas, spirit, flow);
 
         AddPanelTransition("LostPanel");
         AddPanelTransition("WinPanel");
@@ -416,7 +416,7 @@ public static class EllenProductionSceneInstaller
         EditorUtility.SetDirty(director);
     }
 
-    private static void EnsureProductionHud(Canvas canvas, SpiritWorldController spirit)
+    private static void EnsureProductionHud(Canvas canvas, SpiritWorldController spirit, LevelFlowController flow)
     {
         GameObject existing = FindInScene("ProductionHUD");
         if (existing != null) return;
@@ -481,6 +481,50 @@ public static class EllenProductionSceneInstaller
         presenterSo.FindProperty("activeIndicator").objectReferenceValue = indicator;
         presenterSo.FindProperty("stateText").objectReferenceValue = stateObject.GetComponent<TextMeshProUGUI>();
         presenterSo.ApplyModifiedPropertiesWithoutUndo();
+
+        GameObject objectiveHost = new GameObject("ObjectiveHUD", typeof(RectTransform));
+        objectiveHost.transform.SetParent(hudRect, false);
+        RectTransform objectiveHostRect = objectiveHost.GetComponent<RectTransform>();
+        objectiveHostRect.anchorMin = Vector2.zero;
+        objectiveHostRect.anchorMax = Vector2.one;
+        objectiveHostRect.offsetMin = Vector2.zero;
+        objectiveHostRect.offsetMax = Vector2.zero;
+
+        GameObject objectiveVisual = CreateImage("ObjectiveVisual", objectiveHostRect, new Color(0.025f, 0.035f, 0.055f, 0.82f));
+        RectTransform objectiveRect = objectiveVisual.GetComponent<RectTransform>();
+        objectiveRect.anchorMin = objectiveRect.anchorMax = new Vector2(1f, 1f);
+        objectiveRect.pivot = new Vector2(1f, 1f);
+        objectiveRect.anchoredPosition = new Vector2(-28f, -126f);
+        objectiveRect.sizeDelta = new Vector2(300f, 132f);
+
+        GameObject memoriesObject = CreateText("MemoriesObjective", objectiveRect, "Memories 0/0", 18f);
+        RectTransform memoriesRect = memoriesObject.GetComponent<RectTransform>();
+        memoriesRect.anchorMin = memoriesRect.anchorMax = new Vector2(0.5f, 1f);
+        memoriesRect.anchoredPosition = new Vector2(0f, -28f);
+        memoriesRect.sizeDelta = new Vector2(260f, 28f);
+
+        GameObject secretsObject = CreateText("SecretsObjective", objectiveRect, "Secrets 0/0", 18f);
+        RectTransform secretsRect = secretsObject.GetComponent<RectTransform>();
+        secretsRect.anchorMin = secretsRect.anchorMax = new Vector2(0.5f, 1f);
+        secretsRect.anchoredPosition = new Vector2(0f, -65f);
+        secretsRect.sizeDelta = new Vector2(260f, 28f);
+
+        GameObject bossObject = CreateText("BossObjective", objectiveRect, "Defeat the Guardian", 18f);
+        RectTransform bossRect = bossObject.GetComponent<RectTransform>();
+        bossRect.anchorMin = bossRect.anchorMax = new Vector2(0.5f, 1f);
+        bossRect.anchoredPosition = new Vector2(0f, -102f);
+        bossRect.sizeDelta = new Vector2(260f, 28f);
+
+        ObjectiveTrackerPresenter objectivePresenter = EnsureComponent<ObjectiveTrackerPresenter>(objectiveHost);
+        SerializedObject objectiveSo = new SerializedObject(objectivePresenter);
+        objectiveSo.FindProperty("flow").objectReferenceValue = flow;
+        objectiveSo.FindProperty("memoriesText").objectReferenceValue = memoriesObject.GetComponent<TextMeshProUGUI>();
+        objectiveSo.FindProperty("secretsText").objectReferenceValue = secretsObject.GetComponent<TextMeshProUGUI>();
+        objectiveSo.FindProperty("bossText").objectReferenceValue = bossObject.GetComponent<TextMeshProUGUI>();
+        objectiveSo.FindProperty("visualRoot").objectReferenceValue = objectiveVisual;
+        objectiveSo.ApplyModifiedPropertiesWithoutUndo();
+
+        objectiveVisual.SetActive(false);
     }
 
     private static void AddPanelTransition(string panelName)
