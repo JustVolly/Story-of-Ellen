@@ -10,7 +10,7 @@ public class MainMenuPresentation : MonoBehaviour
     [SerializeField] private Transform[] backgroundLayers;
     [SerializeField, Range(0.85f, 1f)] private float titleStartScale = 0.92f;
     [SerializeField, Range(0f, 120f)] private float buttonStartOffset = 42f;
-    [SerializeField, Range(0f, 15f)] private float backgroundDrift = 3f;
+    [SerializeField, Range(0f, 1f)] private float backgroundDrift = 0.08f;
 
     private CanvasGroup group;
     private Coroutine intro;
