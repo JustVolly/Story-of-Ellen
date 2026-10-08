@@ -25,10 +25,11 @@ public class PlayerAdvancedMovement : MonoBehaviour
     private float legacyMovementLockTimer;
     private PlayerHealth health;
     private PlayerAbilityController abilities;
+    private PlayerMovement movement;
 
     public bool IsDashing => dashTimer > 0f;
     public bool OverridesLegacyMovement => IsDashing || legacyMovementLockTimer > 0f;
-    public float DashCooldownNormalized => dashCooldown <= 0f ? 0f : cooldownTimer / dashCooldown;
+    public float DashCooldownNormalized => dashCooldown <= 0f ? 0f : Mathf.Clamp01(cooldownTimer / dashCooldown);
 
     public event Action DashStarted;
     public event Action DashEnded;
@@ -40,6 +41,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
         originalGravity = body.gravityScale;
         health = GetComponent<PlayerHealth>();
         abilities = GetComponent<PlayerAbilityController>();
+        movement = GetComponent<PlayerMovement>();
     }
 
     private void Update()
@@ -106,13 +108,31 @@ public class PlayerAdvancedMovement : MonoBehaviour
             return;
         }
 
-        Collider2D wall = Physics2D.OverlapCircle(wallCheck.position, wallCheckRadius, wallLayer);
+        int mask = wallLayer.value == 0 ? Physics2D.DefaultRaycastLayers : wallLayer.value;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(wallCheck.position, wallCheckRadius, mask);
+
+        Collider2D wall = null;
+        foreach (Collider2D candidate in hits)
+        {
+            if (candidate == null || candidate.isTrigger) continue;
+            if (candidate.transform == transform || candidate.transform.IsChildOf(transform)) continue;
+            wall = candidate;
+            break;
+        }
+
         if (wall == null) return;
 
         float direction = facingRight ? -1f : 1f;
         body.linearVelocity = new Vector2(wallJumpVelocity.x * direction, wallJumpVelocity.y);
         legacyMovementLockTimer = wallJumpControlLock;
         facingRight = direction > 0f;
+
+        if (movement != null)
+        {
+            if (facingRight) movement.FlipRight();
+            else movement.FlipLeft();
+        }
+
         WallJumped?.Invoke();
     }
 
