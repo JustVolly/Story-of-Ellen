@@ -11,6 +11,7 @@ public static class ProgressionSave
         public int highestUnlockedLevel = 1;
         public int totalMemoryFragments;
         public int totalSecrets;
+        public int unlockedAbilities = 4;
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
     }
