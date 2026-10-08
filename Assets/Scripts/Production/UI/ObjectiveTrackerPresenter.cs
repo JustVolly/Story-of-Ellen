@@ -7,6 +7,7 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
     [SerializeField] private TextMeshProUGUI memoriesText;
     [SerializeField] private TextMeshProUGUI secretsText;
     [SerializeField] private TextMeshProUGUI bossText;
+    [SerializeField] private GameObject root;
 
     private GameSession session;
 
@@ -42,6 +43,9 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
     {
         if (session == null) BindSession();
         if (session == null || flow == null) return;
+
+        bool hasObjectives = flow.RequiredMemories > 0 || flow.RequiredSecrets > 0 || flow.RequiresBossDefeat;
+        if (root != null) root.SetActive(hasObjectives);
 
         if (memoriesText != null)
         {
