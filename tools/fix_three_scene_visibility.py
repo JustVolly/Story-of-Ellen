@@ -84,6 +84,14 @@ def main() -> None:
             replacement = re.sub(r"^  m_Color: \{[^}]+\}$",
                                  "  m_Color: {r: 1, g: 1, b: 1, a: 1}",
                                  replacement, count=1, flags=re.M)
+        elif "Sentinel" in name:
+            # Reuse the live game's Snail enemy sprite from Assets/Prefabs/Snail.prefab.
+            replacement = re.sub(r"^  m_Sprite: \{[^}]+\}$",
+                "  m_Sprite: {fileID: -3906221422484359612, guid: 35d33412cf90ccf4f9e1b5100ba41640, type: 3}",
+                replacement, count=1, flags=re.M)
+            replacement = re.sub(r"^  m_Color: \{[^}]+\}$",
+                "  m_Color: {r: 0.85, g: 0.95, b: 1, a: 1}",
+                replacement, count=1, flags=re.M)
         elif "Hazard" in name or "RuneTrap" in name:
             # Project sprite already used by Assets/Animation/spikes.asset.
             replacement = re.sub(r"^  m_Sprite: \{[^}]+\}$",
