@@ -98,6 +98,13 @@ public static class EllenProductionSceneUpgrader
         GameSession session = Ensure<GameSession>(root);
         SpiritWorldController spirit = Ensure<SpiritWorldController>(root);
         LevelFlowController flow = Ensure<LevelFlowController>(root);
+        int memoryCount = UnityEngine.Object.FindObjectsByType<MemoryFragment>(FindObjectsSortMode.None).Length;
+        SetInt(flow, "totalMemories", memoryCount);
+        SetInt(flow, "requiredMemories", 0);
+        SetInt(flow, "requiredSecrets", 0);
+        SetFloat(flow, "sRankTime", scene.name == "OneScene" ? 120f : 150f);
+        SetFloat(flow, "aRankTime", scene.name == "OneScene" ? 180f : 220f);
+
         Ensure<VerticalSliceDirector>(root);
         Ensure<GameplayBootstrap>(root);
 
@@ -128,13 +135,13 @@ public static class EllenProductionSceneUpgrader
 
         Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
         if (canvas != null)
-            BuildProductionHud(canvas, flow, spirit, abilities);
+            BuildProductionHud(canvas, flow, spirit, abilities, scene);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
     }
 
-    private static void BuildProductionHud(Canvas canvas, LevelFlowController flow, SpiritWorldController spirit, PlayerAbilityController abilities)
+    private static void BuildProductionHud(Canvas canvas, LevelFlowController flow, SpiritWorldController spirit, PlayerAbilityController abilities, Scene scene)
     {
         Transform existing = canvas.transform.Find("ProductionHUD");
         if (existing != null) return;
@@ -209,6 +216,62 @@ public static class EllenProductionSceneUpgrader
         TextMeshProUGUI buttonText = CreateCenteredText("Label", spiritButtonObject.transform, "SPIRIT");
         buttonText.fontSize = 19f;
         UnityEventTools.AddPersistentListener(spiritButton.onClick, abilities.TryToggleSpirit);
+
+        GameObject winPanel = FindSceneObjectByName(scene, "WinPanel");
+        if (winPanel != null)
+            BuildResultSummary(hud, winPanel, flow);
+    }
+
+    private static void BuildResultSummary(GameObject hud, GameObject winPanel, LevelFlowController flow)
+    {
+        Transform existing = winPanel.transform.Find("ProductionResults");
+        GameObject summary = existing != null ? existing.gameObject : CreateUiObject("ProductionResults", winPanel.transform);
+
+        RectTransform rect = summary.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(380f, 250f);
+
+        Image background = summary.GetComponent<Image>();
+        if (background == null) background = summary.AddComponent<Image>();
+        background.sprite = BuiltinUiSprite();
+        background.color = new Color(0.03f, 0.045f, 0.07f, 0.9f);
+
+        TextMeshProUGUI title = FindOrCreateResultText(summary.transform, "Title", new Vector2(18f, -18f), "LEVEL COMPLETE", 24f);
+        TextMeshProUGUI rank = FindOrCreateResultText(summary.transform, "Rank", new Vector2(18f, -58f), "A", 42f);
+        TextMeshProUGUI time = FindOrCreateResultText(summary.transform, "Time", new Vector2(18f, -118f), "Time", 18f);
+        TextMeshProUGUI deaths = FindOrCreateResultText(summary.transform, "Deaths", new Vector2(18f, -150f), "Deaths", 18f);
+        TextMeshProUGUI memories = FindOrCreateResultText(summary.transform, "Memories", new Vector2(18f, -182f), "Memories", 18f);
+        TextMeshProUGUI secrets = FindOrCreateResultText(summary.transform, "Secrets", new Vector2(18f, -214f), "Secrets", 18f);
+
+        title.alignment = TextAlignmentOptions.Left;
+
+        LevelResultPresenter presenter = Ensure<LevelResultPresenter>(hud);
+        SetObjectReference(presenter, "flow", flow);
+        SetObjectReference(presenter, "panel", winPanel);
+        SetObjectReference(presenter, "rankText", rank);
+        SetObjectReference(presenter, "timeText", time);
+        SetObjectReference(presenter, "deathsText", deaths);
+        SetObjectReference(presenter, "memoriesText", memories);
+        SetObjectReference(presenter, "secretsText", secrets);
+    }
+
+    private static TextMeshProUGUI FindOrCreateResultText(Transform parent, string name, Vector2 position, string text, float fontSize)
+    {
+        Transform existing = parent.Find(name);
+        TextMeshProUGUI label;
+
+        if (existing != null)
+            label = existing.GetComponent<TextMeshProUGUI>();
+        else
+            label = CreateText(name, parent, position, text);
+
+        if (label == null) return null;
+        label.text = text;
+        label.fontSize = fontSize;
+        return label;
     }
 
     private static GameObject FindPlayer()
@@ -221,6 +284,16 @@ public static class EllenProductionSceneUpgrader
         catch { }
 
         return GameObject.Find("Player");
+    }
+
+    private static GameObject FindSceneObjectByName(Scene scene, string name)
+    {
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+                if (child.name == name) return child.gameObject;
+        }
+        return null;
     }
 
     private static GameObject FindByNameOrTag(string name, string tag)
@@ -339,6 +412,16 @@ public static class EllenProductionSceneUpgrader
         SerializedProperty property = serialized.FindProperty(propertyName);
         if (property == null) return;
         property.intValue = value;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(target);
+    }
+
+    private static void SetFloat(UnityEngine.Object target, string propertyName, float value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property == null) return;
+        property.floatValue = value;
         serialized.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(target);
     }
