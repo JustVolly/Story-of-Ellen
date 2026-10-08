@@ -3,6 +3,8 @@ using System;
 [Serializable]
 public struct LevelResult
 {
+    public string LevelId;
+    public int LevelNumber;
     public float CompletionTime;
     public int Deaths;
     public int MemoriesFound;
@@ -10,13 +12,15 @@ public struct LevelResult
     public int SecretsFound;
     public string Rank;
 
-    public static LevelResult FromSession(int memoriesTotal, float sRankTime, float aRankTime)
+    public static LevelResult FromSession(string levelId, int levelNumber, int memoriesTotal, float sRankTime, float aRankTime)
     {
         GameSession session = GameSession.Instance;
         if (session == null) return default;
 
         return new LevelResult
         {
+            LevelId = levelId,
+            LevelNumber = levelNumber,
             CompletionTime = session.LevelTime,
             Deaths = session.Deaths,
             MemoriesFound = session.MemoryFragments,
