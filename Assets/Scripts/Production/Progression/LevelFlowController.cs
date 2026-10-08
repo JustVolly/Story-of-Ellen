@@ -32,9 +32,10 @@ public class LevelFlowController : MonoBehaviour
 
     public void RegisterBossDefeat()
     {
+        // Defeating the Guardian unlocks the arena exit; completing the level
+        // still requires reaching the authored LevelCompletionTrigger.
         bossDefeated = true;
         ObjectivesChanged?.Invoke();
-        TryComplete();
     }
 
     public bool ObjectivesMet()
