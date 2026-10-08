@@ -340,14 +340,14 @@ public void CalculateDistance()
     {
         if (playerHealth.currenthealth <= 0)
         {
-            LostPanel.gameObject.SetActive(true);
+            SetPanelVisible(LostPanel, true);
             isSetLostPanel = true;
            
           
         }
         else
         {
-            LostPanel.gameObject.SetActive(false);
+            SetPanelVisible(LostPanel, false);
             isSetLostPanel = false;
          
         }
@@ -362,13 +362,13 @@ public void CalculateDistance()
         if (levelUp.isFinish)
         {
             
-            WinPanel.SetActive(true);
+            SetPanelVisible(WinPanel, true);
          
         }
 
         else
         {
-            WinPanel.SetActive(false);
+            SetPanelVisible(WinPanel, false);
             
         }
 
@@ -502,14 +502,14 @@ IEnumerator WaitingBirthParticle()
           {
             if(!isbackpressHomeButton)
             {
-                 StopPanel.SetActive(true);
+                 SetPanelVisible(StopPanel, true);
                  Time.timeScale = 0f;
               
             }
 
             else
             {
-                 StopPanel.SetActive(false);
+                 SetPanelVisible(StopPanel, false);
                  Time.timeScale = 1f;
             }
           }
@@ -524,7 +524,7 @@ IEnumerator WaitingBirthParticle()
     {
          isPressStopButton = false;
          Time.timeScale = 1f;
-         StopPanel.SetActive(false);
+         SetPanelVisible(StopPanel, false);
 
     }
 
@@ -542,6 +542,26 @@ IEnumerator WaitingBirthParticle()
            
 
     } 
+
+    private static void SetPanelVisible(GameObject panel, bool visible)
+    {
+        if (panel == null) return;
+
+        UIPanelTransition transition = panel.GetComponent<UIPanelTransition>();
+
+        if (visible)
+        {
+            if (!panel.activeSelf) panel.SetActive(true);
+            else if (transition != null) transition.Show();
+            return;
+        }
+
+        if (transition != null && panel.activeInHierarchy)
+            transition.Hide();
+        else
+            panel.SetActive(false);
+    }
+
 
 }
 
