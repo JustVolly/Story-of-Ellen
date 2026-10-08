@@ -384,8 +384,28 @@ public static class EllenProductionSceneInstaller
         VerticalSliceDirector director = EnsureComponent<VerticalSliceDirector>(productionRoot);
         GameplayBootstrap bootstrap = EnsureComponent<GameplayBootstrap>(productionRoot);
         HitStop hitStop = EnsureComponent<HitStop>(productionRoot);
+        AudioManager audioManager = EnsureComponent<AudioManager>(productionRoot);
         SpiritWorldPresentation spiritPresentation = EnsureComponent<SpiritWorldPresentation>(productionRoot);
         LevelEntryConfigurator levelEntry = EnsureComponent<LevelEntryConfigurator>(productionRoot);
+
+        AudioSource[] audioSources = productionRoot.GetComponents<AudioSource>();
+        while (audioSources.Length < 2)
+        {
+            productionRoot.AddComponent<AudioSource>();
+            audioSources = productionRoot.GetComponents<AudioSource>();
+        }
+
+        AudioSource musicSource = audioSources[0];
+        AudioSource sfxSource = audioSources[1];
+        musicSource.playOnAwake = false;
+        musicSource.loop = true;
+        sfxSource.playOnAwake = false;
+        sfxSource.loop = false;
+
+        SerializedObject audioSo = new SerializedObject(audioManager);
+        audioSo.FindProperty("musicSource").objectReferenceValue = musicSource;
+        audioSo.FindProperty("sfxSource").objectReferenceValue = sfxSource;
+        audioSo.ApplyModifiedPropertiesWithoutUndo();
 
         SerializedObject levelEntrySo = new SerializedObject(levelEntry);
         bool isLevelTwo = SceneManager.GetActiveScene().name == "TwoScene";
