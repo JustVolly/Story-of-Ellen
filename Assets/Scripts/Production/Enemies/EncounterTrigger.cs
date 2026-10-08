@@ -25,6 +25,7 @@ public class EncounterTrigger : MonoBehaviour
         if (entranceBarrier != null) entranceBarrier.SetActive(true);
 
         alive = 0;
+        if (enemies == null || enemies.Length == 0) { Complete(); return; }
         foreach (EnemyHealth enemy in enemies)
         {
             if (enemy == null || enemy.IsDead) continue;
@@ -43,7 +44,9 @@ public class EncounterTrigger : MonoBehaviour
 
     private void Complete()
     {
-        foreach (EnemyHealth enemy in enemies) if (enemy != null) enemy.Died -= OnEnemyDied;
+        if (enemies != null)
+            if (enemies != null)
+            foreach (EnemyHealth enemy in enemies) if (enemy != null) enemy.Died -= OnEnemyDied;
         if (entranceBarrier != null) entranceBarrier.SetActive(false);
         if (director != null) director.SetBeat(completionBeat);
     }
