@@ -10,6 +10,7 @@ public class EncounterTrigger : MonoBehaviour
 
     private int alive;
     private bool started;
+    private bool completed;
 
     private void Awake()
     {
@@ -20,17 +21,20 @@ public class EncounterTrigger : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (started || !other.CompareTag("Player")) return;
+
         started = true;
         if (encounterRoot != null) encounterRoot.SetActive(true);
         if (entranceBarrier != null) entranceBarrier.SetActive(true);
 
         alive = 0;
-        if (enemies == null || enemies.Length == 0) { Complete(); return; }
-        foreach (EnemyHealth enemy in enemies)
+        if (enemies != null)
         {
-            if (enemy == null || enemy.IsDead) continue;
-            alive++;
-            enemy.Died += OnEnemyDied;
+            foreach (EnemyHealth enemy in enemies)
+            {
+                if (enemy == null || enemy.IsDead) continue;
+                alive++;
+                enemy.Died += OnEnemyDied;
+            }
         }
 
         if (alive == 0) Complete();
@@ -38,21 +42,27 @@ public class EncounterTrigger : MonoBehaviour
 
     private void OnEnemyDied()
     {
+        if (completed) return;
         alive = Mathf.Max(0, alive - 1);
         if (alive == 0) Complete();
     }
 
     private void Complete()
     {
-        if (enemies != null)
-            if (enemies != null)
-            foreach (EnemyHealth enemy in enemies) if (enemy != null) enemy.Died -= OnEnemyDied;
+        if (completed) return;
+        completed = true;
+        UnsubscribeEnemies();
+
         if (entranceBarrier != null) entranceBarrier.SetActive(false);
         if (director != null) director.SetBeat(completionBeat);
     }
 
-    private void OnDestroy()
+    private void OnDestroy() => UnsubscribeEnemies();
+
+    private void UnsubscribeEnemies()
     {
-        foreach (EnemyHealth enemy in enemies) if (enemy != null) enemy.Died -= OnEnemyDied;
+        if (enemies == null) return;
+        foreach (EnemyHealth enemy in enemies)
+            if (enemy != null) enemy.Died -= OnEnemyDied;
     }
 }
