@@ -81,6 +81,11 @@ public static class EllenLevelArtBuilder
         SceneManager.MoveGameObjectToScene(root, scene);
         Undo.RegisterCreatedObjectUndo(root, "Build Ellen level artwork");
 
+        // Landmark visuals are children of gameplay triggers so that gate toggles
+        // and collectible destruction control the visuals too. Remove old copies
+        // before reconstructing this layer on a subsequent bake.
+        RemovePreviousLandmarkVisuals(design.transform);
+
         GameObject background = AddGroup(root.transform, "01 | Background Layers");
         GameObject silhouette = AddGroup(root.transform, "02 | World Silhouettes");
         GameObject setDressing = AddGroup(root.transform, "03 | Environment Props");
@@ -291,6 +296,15 @@ public static class EllenLevelArtBuilder
         source.playOnAwake = true;
         source.spatialBlend = 0f;
         source.volume = 0.15f;
+    }
+
+    private static void RemovePreviousLandmarkVisuals(Transform design)
+    {
+        Transform[] items = design.GetComponentsInChildren<Transform>(true);
+        // DestroyImmediate is safe on objects collected before modification.
+        foreach (Transform item in items)
+            if (item != null && item.name == "ProductionVisual")
+                UnityEngine.Object.DestroyImmediate(item.gameObject);
     }
 
     private static GameObject AddGroup(Transform parent, string name)
