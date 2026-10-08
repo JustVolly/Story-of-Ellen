@@ -11,12 +11,21 @@ public class PlayerAbilityController : MonoBehaviour
     [SerializeField] private SpiritWorldController spiritWorld;
 
     public event Action<Ability> AbilityUnlocked;
+
+    private void Awake()
+    {
+        ProgressionSave.Data data = ProgressionSave.Load();
+        unlocked |= (Ability)data.unlockedAbilities;
+    }
     public bool Has(Ability ability) => (unlocked & ability) == ability;
 
     public void Unlock(Ability ability)
     {
         if (Has(ability)) return;
         unlocked |= ability;
+        ProgressionSave.Data data = ProgressionSave.Load();
+        data.unlockedAbilities = (int)unlocked;
+        ProgressionSave.Save(data);
         AbilityUnlocked?.Invoke(ability);
     }
 
