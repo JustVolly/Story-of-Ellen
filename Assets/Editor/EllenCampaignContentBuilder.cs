@@ -123,6 +123,8 @@ public static class EllenCampaignContentBuilder
         errors += ExpectGameObject(scene, "[Production]");
         errors += ExpectGameObject(scene, "[LevelDesign]");
         errors += ExpectGameObject(scene, EllenLevelArtBuilder.RootName);
+        errors += ExpectComponent<EllenGameplayInput>(scene);
+        errors += ExpectComponent<EllenFallRecovery>(scene);
         errors += ExpectComponent<PlayerAbilityController>(scene);
         errors += ExpectComponent<SpiritWorldController>(scene);
         errors += ExpectComponent<LevelFlowController>(scene);

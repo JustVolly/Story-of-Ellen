@@ -208,6 +208,21 @@ public class PlayerMovement : MonoBehaviour
         return Mathf.Abs(myRigidbody.linearVelocity.y) <= apexVelocityThreshold;
     }
 
+    /// <summary>Drop cached contacts and jump buffers after teleporting to a shrine.</summary>
+    public void ResetForRespawn()
+    {
+        coyoteCounter = 0f;
+        jumpBufferCounter = 0f;
+        jumpsUsed = 0;
+        groundContacts = 0;
+        isGround = false;
+        isinAir = false;
+        jumpHeld = false;
+        isPress_Up = false;
+        RemainingJumping = maxJumps;
+        previousVerticalVelocity = 0f;
+    }
+
     public void Jump()
     {
         if (playerHealth == null ||

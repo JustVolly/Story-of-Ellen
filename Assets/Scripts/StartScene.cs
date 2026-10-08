@@ -139,11 +139,9 @@ public class StartScene : MonoBehaviour
     {
         if (isPlay) return;
 
-        ProgressionSave.Data data = ProgressionSave.Load();
-        data.highestUnlockedLevel = 1;
-        data.campaignCompleted = false;
-        data.unlockedAbilities = (int)PlayerAbilityController.Ability.SpiritWorld;
-        ProgressionSave.Save(data);
+        // Reset the *whole* campaign (ranks, collected totals and abilities),
+        // while retaining the player's music and SFX preferences.
+        ProgressionSave.ResetForNewJourney();
 
         isPlay = true;
         Time.timeScale = 1f;
