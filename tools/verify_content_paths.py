@@ -33,6 +33,10 @@ ASSETS = [
     "Assets/Scripts/Production/Player/EllenGameplayInput.cs.meta",
     "Assets/Scripts/Production/Player/EllenFallRecovery.cs",
     "Assets/Scripts/Production/Player/EllenFallRecovery.cs.meta",
+    "Assets/Scripts/Production/Spirit/SpiritWell.cs",
+    "Assets/Scripts/Production/Spirit/SpiritWell.cs.meta",
+    "Assets/Scripts/Production/World/AbilitySeal.cs",
+    "Assets/Scripts/Production/World/AbilitySeal.cs.meta",
     "Assets/Editor/EllenProductionSceneInstaller.cs",
     "Assets/Editor/EllenProductionLevelDesigner.cs",
     "Assets/Editor/EllenLevelArtBuilder.cs",
@@ -74,6 +78,9 @@ if designer_path.exists():
         "CreateWallJumpShaft(", "CreateGuardianArena(", "CreateMemory(",
         "CreateSpiritGate(", "CreateDashBarrier(", "CreateCompletionTrigger(",
         "Assets/Prefabs/Snail.prefab",
+        "CreateSpiritWell(", "CreateAbilitySeal(",
+        "AbilitySeal_SpiritTutorial", "AbilitySeal_DashTutorial",
+        "AbilitySeal_SpiritChain", "AbilitySeal_DashChain",
     ):
         if token not in source:
             errors.append(f"Level designer missing feature: {token}")
@@ -123,6 +130,29 @@ required_wiring = {
     "Assets/Scripts/CanvasControl.cs": (
         "waitingForRespawn", "CurrentTime = Mathf.Max(1, TotalTime)",
     ),
+    "Assets/Scripts/Production/Spirit/SpiritWorldController.cs": (
+        "float RestoreEnergy(float amount)", "EnergyChanged?.Invoke(NormalizedEnergy)",
+    ),
+    "Assets/Scripts/Production/Spirit/SpiritWell.cs": (
+        "spiritWorld.RestoreEnergy(energyGranted)", "Time.time + cooldown",
+        "OnTriggerStay2D", "rechargeEffect.Play()",
+    ),
+    "Assets/Scripts/Production/World/AbilitySeal.cs": (
+        "RequiredAction.SpiritWorld", "IsPlayerDashing(other)",
+        "Refresh()", "activationEffect.Play()",
+    ),
+    "Assets/Scripts/PlayerBulletDamage.cs": (
+        "GetComponentInParent<EnemyHealth>()",
+        "productionHealth.TakeDamage(1)",
+    ),
+    "Assets/Editor/EllenLevelArtBuilder.cs": (
+        "bool spiritWell = item.name.StartsWith(", "bool abilitySeal = item.name.StartsWith(",
+        'so.FindProperty("indicator")',
+    ),
+    "Assets/Editor/EllenCampaignContentBuilder.cs": (
+        "ValidateAbilityPuzzles(scene)", "expectedSeals", "expectedWells",
+        "ExpectReference(so,",
+    ),
 }
 for path, tokens in required_wiring.items():
     file = ROOT / path
@@ -141,6 +171,8 @@ new_metas = [
     ROOT / "Assets/Scripts/Production/Audio/EllenAmbienceVolume.cs.meta",
     ROOT / "Assets/Scripts/Production/Player/EllenGameplayInput.cs.meta",
     ROOT / "Assets/Scripts/Production/Player/EllenFallRecovery.cs.meta",
+    ROOT / "Assets/Scripts/Production/Spirit/SpiritWell.cs.meta",
+    ROOT / "Assets/Scripts/Production/World/AbilitySeal.cs.meta",
 ]
 new_guids = {}
 for meta in new_metas:

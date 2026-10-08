@@ -82,6 +82,10 @@ public static class EllenProductionLevelDesigner
         CreateBeat(root.transform, "Beat_Combat", new Vector2(430f, -37f), director, VerticalSliceDirector.Beat.Combat);
         CreateBeat(root.transform, "Beat_Traversal", new Vector2(558f, -37f), director, VerticalSliceDirector.Beat.Traversal);
 
+        CreateSpiritWell(root.transform, "SpiritWell_Tutorial", new Vector2(70f, -38f), spirit);
+        CreateAbilitySeal(root.transform, "AbilitySeal_SpiritTutorial",
+            new Vector2(92f, -36.5f), new Vector2(1.4f, 11f),
+            AbilitySeal.RequiredAction.SpiritWorld, spirit);
         CreateSpiritGate(root.transform, "SpiritGate_Intro", new Vector2(112f, -36.5f), new Vector2(1.5f, 12f), spirit);
         CreateSpiritGate(root.transform, "SpiritGate_Final", new Vector2(646f, -36.5f), new Vector2(1.5f, 12f), spirit);
 
@@ -120,6 +124,9 @@ public static class EllenProductionLevelDesigner
         CreateBeat(root.transform, "Beat_Combat", new Vector2(352f, -37f), director, VerticalSliceDirector.Beat.Combat);
         CreateBeat(root.transform, "Beat_Boss", new Vector2(668f, -37f), director, VerticalSliceDirector.Beat.Boss);
 
+        CreateAbilitySeal(root.transform, "AbilitySeal_DashTutorial",
+            new Vector2(135f, -36.5f), new Vector2(1.4f, 11f),
+            AbilitySeal.RequiredAction.Dash, null);
         CreateDashBarrier(root.transform, "DashBarrier_01", new Vector2(160f, -36.5f), new Vector2(1.6f, 12f));
         CreateDashBarrier(root.transform, "DashBarrier_02", new Vector2(520f, -36.5f), new Vector2(1.6f, 12f));
 
@@ -157,12 +164,20 @@ public static class EllenProductionLevelDesigner
         CreateMemory(root.transform, "Memory_01_FirstAscent", new Vector2(126f, -6.5f));
 
         CreateSecret(root.transform, "Secret_SpiritBalcony", new Vector2(248f, -19f), new Vector2(9f, 7f));
+        CreateSpiritWell(root.transform, "SpiritWell_Chain", new Vector2(280f, -38f), spirit);
+        CreateAbilitySeal(root.transform, "AbilitySeal_SpiritChain",
+            new Vector2(300f, -36.5f), new Vector2(1.4f, 11f),
+            AbilitySeal.RequiredAction.SpiritWorld, spirit);
         CreateSpiritGate(root.transform, "SpiritGate_Chain", new Vector2(326f, -36.5f), new Vector2(1.6f, 12f), spirit);
         CreateMemory(root.transform, "Memory_02_SpiritChain", new Vector2(365f, -25f));
 
+        CreateAbilitySeal(root.transform, "AbilitySeal_DashChain",
+            new Vector2(435f, -36.5f), new Vector2(1.4f, 11f),
+            AbilitySeal.RequiredAction.Dash, spirit);
         CreateDashBarrier(root.transform, "DashBarrier_Chain", new Vector2(458f, -36.5f), new Vector2(1.6f, 12f));
         CreateShrine(root.transform, "Shrine_02", new Vector2(505f, -39f));
 
+        CreateSpiritWell(root.transform, "SpiritWell_FinalAscent", new Vector2(554f, -38f), spirit);
         CreateWallJumpShaft(root.transform, "WallJumpShaft_02", 585f, -24f, 12f, 40f);
         CreateMemory(root.transform, "Memory_03_FinalAscent", new Vector2(585f, -6.5f));
 
@@ -275,6 +290,63 @@ public static class EllenProductionLevelDesigner
         SecretArea secret = go.AddComponent<SecretArea>();
         SerializedObject so = new SerializedObject(secret);
         so.FindProperty("revealEffect").objectReferenceValue = reveal;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void CreateSpiritWell(
+        Transform parent, string name, Vector2 position, SpiritWorldController spirit)
+    {
+        GameObject go = CreateWorldObject(name, parent, position);
+        BoxCollider2D sensor = go.AddComponent<BoxCollider2D>();
+        sensor.isTrigger = true;
+        sensor.size = new Vector2(4.8f, 5.8f);
+
+        ParticleSystem recharge = CreateBurstParticles(
+            go.transform, "RechargeBurst", new Color(0.3f, 1f, 0.85f, 0.95f), 0.2f, 36);
+        CreateLoopingParticles(go.transform, "WellAura",
+            new Color(0.25f, 0.9f, 0.8f, 0.8f), 0.13f, 15f,
+            new Vector3(2.4f, 4.2f, 0.2f));
+
+        SpiritWell well = go.AddComponent<SpiritWell>();
+        SerializedObject so = new SerializedObject(well);
+        so.FindProperty("spiritWorld").objectReferenceValue = spirit;
+        so.FindProperty("rechargeEffect").objectReferenceValue = recharge;
+        so.FindProperty("energyGranted").floatValue = 3f;
+        so.FindProperty("cooldown").floatValue = 8f;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void CreateAbilitySeal(
+        Transform parent, string name, Vector2 position, Vector2 size,
+        AbilitySeal.RequiredAction required, SpiritWorldController spirit)
+    {
+        GameObject go = CreateWorldObject(name, parent, position);
+        BoxCollider2D blocker = go.AddComponent<BoxCollider2D>();
+        blocker.size = size;
+        blocker.isTrigger = false;
+
+        BoxCollider2D sensor = go.AddComponent<BoxCollider2D>();
+        sensor.isTrigger = true;
+        sensor.size = new Vector2(size.x + 4f, size.y + 1f);
+
+        GameObject visual = new GameObject("AbilitySealVisual");
+        visual.transform.SetParent(go.transform, false);
+        Color color = required == AbilitySeal.RequiredAction.SpiritWorld
+            ? new Color(0.3f, 0.82f, 1f, 0.85f)
+            : new Color(1f, 0.7f, 0.3f, 0.95f);
+        CreateLoopingParticles(visual.transform, "SealAura", color,
+            0.16f, 22f, new Vector3(size.x, size.y, 0.25f));
+
+        ParticleSystem burst = CreateBurstParticles(
+            go.transform, "UnlockBurst", color, 0.23f, 48);
+        AbilitySeal seal = go.AddComponent<AbilitySeal>();
+        SerializedObject so = new SerializedObject(seal);
+        so.FindProperty("requiredAction").enumValueIndex = (int)required;
+        so.FindProperty("spiritWorld").objectReferenceValue = spirit;
+        so.FindProperty("blockingCollider").objectReferenceValue = blocker;
+        so.FindProperty("proximityTrigger").objectReferenceValue = sensor;
+        so.FindProperty("lockedVisual").objectReferenceValue = visual;
+        so.FindProperty("activationEffect").objectReferenceValue = burst;
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 

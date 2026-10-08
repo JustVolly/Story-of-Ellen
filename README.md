@@ -42,4 +42,15 @@ windups and recoveries, and save data correctly handles a new journey and Level 
 campaign completion.
 
 
+### New Echo puzzles and Spirit recovery
+
+- Level 1: Learn to charge Spirit Seals and refill energy at an altar-style Spirit Well.
+- Level 2: Break a dedicated Dash Seal before the existing dash barrier challenge.
+- Level 3: Combine Spirit and Dash Seals, with two energy Wells placed around its traversal gauntlet.
+- Production bullets can damage Guardian health even when the hit collider is on a child object.
+- The campaign baker generates these objects and validates their scene references during the Unity Editor pass.
+
+See the [full level and combat playtest guide](docs/LEVEL_CONTENT_BUILD.md)
+for the action-specific acceptance checklist.
+
 > Editor content generation is implemented, but this branch does not claim a completed Unity Play Mode or shipping build verification. The generated scenes must be baked and tested in Unity before merging into a release branch.

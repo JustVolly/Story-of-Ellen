@@ -132,6 +132,8 @@ public static class EllenCampaignContentBuilder
         errors += ExpectComponent<LevelEntryConfigurator>(scene);
         errors += ExpectComponent<SpiritShrine>(scene);
         errors += ExpectComponent<MemoryFragment>(scene);
+        // Verify new puzzles are both present and fully wired to Unity art.
+        errors += ValidateAbilityPuzzles(scene);
         if (scene.name == "OneScene" || scene.name == "ThreeScene")
             errors += ExpectComponent<SpiritGate>(scene);
         if (scene.name == "TwoScene" || scene.name == "ThreeScene")
@@ -150,6 +152,60 @@ public static class EllenCampaignContentBuilder
         Debug.Log("[Ellen Campaign] " + scene.name + ": " +
             (errors == 0 ? "structural references ready" : errors + " errors"));
         return errors;
+    }
+
+    private static int ValidateAbilityPuzzles(Scene scene)
+    {
+        int errors = 0;
+        int expectedSeals = scene.name == "ThreeScene" ? 2 : 1;
+        int expectedWells = scene.name == "ThreeScene" ? 2 :
+            scene.name == "OneScene" ? 1 : 0;
+        int seals = 0;
+        int wells = 0;
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (AbilitySeal seal in root.GetComponentsInChildren<AbilitySeal>(true))
+            {
+                seals++;
+                SerializedObject so = new SerializedObject(seal);
+                errors += ExpectReference(so, "blockingCollider", scene.name, seal.name);
+                errors += ExpectReference(so, "proximityTrigger", scene.name, seal.name);
+                errors += ExpectReference(so, "lockedVisual", scene.name, seal.name);
+                errors += ExpectReference(so, "activationEffect", scene.name, seal.name);
+                if (so.FindProperty("requiredAction").enumValueIndex == 0)
+                    errors += ExpectReference(so, "spiritWorld", scene.name, seal.name);
+            }
+            foreach (SpiritWell well in root.GetComponentsInChildren<SpiritWell>(true))
+            {
+                wells++;
+                SerializedObject so = new SerializedObject(well);
+                errors += ExpectReference(so, "spiritWorld", scene.name, well.name);
+                errors += ExpectReference(so, "indicator", scene.name, well.name);
+                errors += ExpectReference(so, "rechargeEffect", scene.name, well.name);
+            }
+        }
+        if (seals != expectedSeals)
+        {
+            Debug.LogError("[Ellen Campaign] " + scene.name +
+                " expected " + expectedSeals + " ability seals, found " + seals);
+            errors++;
+        }
+        if (wells != expectedWells)
+        {
+            Debug.LogError("[Ellen Campaign] " + scene.name +
+                " expected " + expectedWells + " Spirit Wells, found " + wells);
+            errors++;
+        }
+        return errors;
+    }
+
+    private static int ExpectReference(SerializedObject so, string field, string scene, string owner)
+    {
+        SerializedProperty property = so.FindProperty(field);
+        if (property != null && property.objectReferenceValue != null) return 0;
+        Debug.LogError("[Ellen Campaign] Missing reference " + scene +
+            "/" + owner + "/" + field);
+        return 1;
     }
 
     private static int ExpectGameObject(Scene scene, string name)
