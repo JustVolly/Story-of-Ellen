@@ -1,537 +1,365 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using JetBrains.Annotations;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Legacy Scene References")]
     public GameObject Player;
     public Transform PlayerTransform;
-    [SerializeField] Transform RespawnPoint;
-    
-    [SerializeField] private float runSpeed = 1500f;
-    [SerializeField] float AirRunSpeed = 1200f;
-    [SerializeField] private float JumpPower = 900f;
-    [Header("Jump Feel")]
-    [SerializeField, Range(0f, 0.3f)] private float coyoteTime = 0.12f;
-    [SerializeField, Range(0f, 0.3f)] private float jumpBufferTime = 0.12f;
-    private float coyoteTimeCounter;
-    private float jumpBufferCounter;
-
-    
-
+    [SerializeField] private Transform RespawnPoint;
     public BoxCollider2D Box;
     public PolygonCollider2D Polygon;
+    [SerializeField] private ParticleSystem TrapEffect;
 
-    [SerializeField] ParticleSystem TrapEffect;
-   
-    
-    public int TouchCountCheck = 0;
+    [Header("Horizontal Feel")]
+    [SerializeField, Min(0.1f)] private float maxRunSpeed = 8.5f;
+    [SerializeField, Min(0.1f)] private float groundAcceleration = 55f;
+    [SerializeField, Min(0.1f)] private float groundDeceleration = 70f;
+    [SerializeField, Min(0.1f)] private float airAcceleration = 35f;
+    [SerializeField, Min(0.1f)] private float airDeceleration = 22f;
+    [SerializeField, Range(1f, 2f)] private float boosterSpeedMultiplier = 1.3f;
 
-   
-    CanvasControl canvasControl;
-    CollectableCoins collectableCoins;
-    ScenesManager scenesManager;
-    PlayerHealth playerHealth;
-    TrapThorns trapThorns;
-    BoosterPowerUp boosterPowerUp;
-    LevelUp levelUp;
-    PowerUps powerUps;
-    TrapofEnemy trapofEnemy;
-    PlayerAdvancedMovement advancedMovement;
- 
+    [Header("Jump Feel")]
+    [SerializeField, Min(0.1f)] private float jumpVelocity = 15.5f;
+    [SerializeField, Range(0f, 0.3f)] private float coyoteTime = 0.12f;
+    [SerializeField, Range(0f, 0.3f)] private float jumpBufferTime = 0.12f;
+    [SerializeField, Range(0.1f, 0.9f)] private float jumpCutMultiplier = 0.5f;
+    [SerializeField, Min(1f)] private float fallGravityMultiplier = 1.7f;
+    [SerializeField, Min(1f)] private float lowJumpGravityMultiplier = 1.25f;
+    [SerializeField, Min(1f)] private float maxFallSpeed = 22f;
+    [SerializeField, Min(1)] private int maxJumps = 2;
+
+    public int TouchCountCheck;
+    public int RemainingJumping;
 
     public Rigidbody2D myRigidbody;
     public Animator CharacterAnimator;
     public Transform mytransform;
-    private SpriteRenderer spriteRenderer;
-    
-   
-   
-   
-    public bool isOutOfViewCamera = false;
-    public  bool isRunning;
+
+    public bool isOutOfViewCamera;
+    public bool isRunning;
     public bool isGround;
-   
     public bool isinAir;
     public bool isPress_A;
     public bool isPress_D;
     public bool isPress_Up;
     public bool isFacingRight;
+    public bool isPressD_Ground;
+    public bool isPressA_Ground;
 
-    public bool isPressD_Ground = false;
-    public bool isPressA_Ground = false;
+    private ScenesManager scenesManager;
+    private PlayerHealth playerHealth;
+    private TrapThorns trapThorns;
+    private BoosterPowerUp boosterPowerUp;
+    private LevelUp levelUp;
+    private PowerUps powerUps;
+    private TrapofEnemy trapofEnemy;
+    private PlayerAdvancedMovement advancedMovement;
 
-    
-
-
-   
-    private int MaxJumping = 2;
-    public int RemainingJumping;
-    
+    private float coyoteCounter;
+    private float jumpBufferCounter;
+    private float baseGravityScale;
+    private int jumpsUsed;
+    private bool jumpHeld;
 
     private void Awake()
     {
-       
-        canvasControl =  FindObjectOfType<CanvasControl>(); 
-        scenesManager  = FindObjectOfType<ScenesManager>(); 
-        playerHealth = FindObjectOfType<PlayerHealth>();  
-        trapThorns = FindObjectOfType<TrapThorns>(); 
+        myRigidbody = GetComponent<Rigidbody2D>();
+        CharacterAnimator = GetComponent<Animator>();
+        mytransform = transform;
+        if (Player == null) Player = gameObject;
+        if (PlayerTransform == null) PlayerTransform = transform;
+
+        playerHealth = GetComponent<PlayerHealth>();
+        advancedMovement = GetComponent<PlayerAdvancedMovement>();
+
+        scenesManager = FindObjectOfType<ScenesManager>();
+        trapThorns = FindObjectOfType<TrapThorns>();
         boosterPowerUp = FindObjectOfType<BoosterPowerUp>();
         levelUp = FindObjectOfType<LevelUp>();
-        trapofEnemy = FindObjectOfType<TrapofEnemy>();
         powerUps = FindObjectOfType<PowerUps>();
-        advancedMovement = GetComponent<PlayerAdvancedMovement>();
-        
+        trapofEnemy = FindObjectOfType<TrapofEnemy>();
+
+        if (myRigidbody != null) baseGravityScale = myRigidbody.gravityScale;
+        maxJumps = Mathf.Max(1, maxJumps);
+        RemainingJumping = maxJumps;
     }
+
     private void Start()
     {
-        
-        AirRunSpeed = 1200f;
-        if (RespawnPoint != null) gameObject.transform.position = RespawnPoint.position;
-        RemainingJumping = MaxJumping;
-        isFacingRight = true;
-
-        
-        
-        myRigidbody = gameObject.GetComponent<Rigidbody2D>();
-        mytransform = GetComponent<Transform>(); 
-        CharacterAnimator = GetComponent<Animator>();
-
-        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-
-        
-
+        if (RespawnPoint != null) transform.position = RespawnPoint.position;
+        isFacingRight = transform.localScale.x >= 0f;
+        advancedMovement?.SetFacing(isFacingRight);
     }
 
-    void OnTriggerEnter2D(Collider2D other) 
+    private void Update()
     {
-        if (other.gameObject.tag == "CheckPoint")
-        {
-            TouchCountCheck++;
-            scenesManager.istouchCheckPoint = true;
-        }
-        
-        
-        if(other.gameObject.tag == "Trap" && trapofEnemy.isActiveDefence || other.gameObject.tag == "Trap" && powerUps.DefenderEffect.isPlaying)
-        {
-            Debug.Log("IsDefence çaliştiği için fonk çikildi");
-            return;
-        }
+        if (playerHealth == null || myRigidbody == null) return;
 
-        if (other.CompareTag("Trap") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
-        {
-           
-           TrapEffect.Play();
-           playerHealth.TakeDamage();
-        }
-        
-        if (other.gameObject.tag == "Enemy" && boosterPowerUp.isBooster)
-        {
-           other.GetComponent<BoxCollider2D>().isTrigger = true;
-        }
-
-    }
-
-    void OnTriggerStay2D(Collider2D other) 
-    {
-        if (other.CompareTag("Trap") && (trapofEnemy.isActiveDefence || powerUps.DefenderEffect.isPlaying))
-        {
-            Debug.Log("IsDefence çaliştiği için fonk çikildi");
-            return;
-        }
-       
-       
-        if (other.CompareTag("Trap") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
-        {
-           
-           TrapEffect.Play();
-           playerHealth.TakeDamage();
-        }
-        
-    }
-
-    void OnTriggerExit2D(Collider2D other) 
-    {
-        if (other.gameObject.tag == "CheckPoint")
-        {
-            
-            scenesManager.istouchCheckPoint = false;
-        }
-       
-        if (other.gameObject.tag == "Trap")
-        {
-            
-            TrapEffect.Stop();
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if(collision.gameObject.tag == "Grounds")
-        {
-            isGround = true;
-            RemainingJumping = MaxJumping;
-          
-
-        }
-    }
-
-     private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "Grounds")
-        {
-            isGround = false;
-        }
-
-    }
-
-     private void Update() 
-    {
-        RemainingJumping = Mathf.Clamp(RemainingJumping, 0, MaxJumping);
-        coyoteTimeCounter = isGround ? coyoteTime : Mathf.Max(0f, coyoteTimeCounter - Time.deltaTime);
+        coyoteCounter = isGround ? coyoteTime : Mathf.Max(0f, coyoteCounter - Time.deltaTime);
         jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.deltaTime);
 
-        if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f && RemainingJumping > 0)
-        {
-            ExecuteJump();
-        }
-        
         if (isGround)
         {
+            jumpsUsed = 0;
+            RemainingJumping = maxJumps;
             isPressD_Ground = false;
             isPressA_Ground = false;
         }
-
-        if(boosterPowerUp.isBooster) { runSpeed = 2000f; }
-        else { runSpeed = 1500f; }
-
-        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
-
-        
-        
-
-       if(playerHealth.isAliving())
-       {
-          if (isPress_D)
-          {
-           
-            RightDirection();
-
-          }
-
-          if (isPress_A)
-          {
-            LeftDirection();
-            
-          }
-
-         
-
-          if((isPress_D && !isGround))
-          {
-                isPressD_Ground = true;
-                Move(Vector2.right,AirRunSpeed);
-                FlipRight();
-                CharacterAnimator.SetBool("jump", true);
-                CharacterAnimator.SetBool("run", false);
-                isRunning = true;
-                isFacingRight = true;
-
-          }
-
-          if (isPress_A && !isGround)
-          {
-               isPressA_Ground = true;
-               Move(Vector2.left,AirRunSpeed);
-               FlipLeft();
-               CharacterAnimator.SetBool("jump", true);
-               CharacterAnimator.SetBool("run", false);
-               isRunning = true;
-               isFacingRight = false;
-          }
-
-          
-
-       }
-
-    
-       
-    }
-
-
-    IEnumerator Count()
-    {
-        yield return new WaitForSeconds(2f);
-        
-        
-    }
-
-    void OnBecameInvisible() 
-    {
-        isOutOfViewCamera = true;
-        Debug.Log("Karakter Kamera görüş alani dişinda" + gameObject.name);
-    }
-
-    void OnBecameVisible()
-    {
-        isOutOfViewCamera = false;
-    }
-    
-   
-
-    void RightDirection()
-    {
-           if (levelUp.isFinish || isPressD_Ground)
-           {
-              return;
-           }
-           
-            if(isGround)
-            {
-                Move(Vector2.right, runSpeed);
-                FlipRight();
-                CharacterAnimator.SetBool("run", true);
-                CharacterAnimator.SetBool("idle", false);
-                CharacterAnimator.SetBool("jump", false);
-                isRunning = true;
-                isFacingRight = true;
-
-
-            }
-               
-                
-           
-            
-          
-       if(!playerHealth.isAliving())
+        else
         {
-            return;
+            RemainingJumping = Mathf.Max(0, maxJumps - jumpsUsed);
         }
 
+        TryConsumeBufferedJump();
+        UpdateAnimator();
     }
 
-    void LeftDirection()
+    private void FixedUpdate()
     {
-          if (levelUp.isFinish || isPressA_Ground)
-           {
-              return;
-           }
-           
-           
-           if(isGround)
-           {
-                Move(Vector2.left, runSpeed);
-                FlipLeft();
-                CharacterAnimator.SetBool("run", true);
-                CharacterAnimator.SetBool("idle", false);
-                 CharacterAnimator.SetBool("jump", false);
-                isRunning = true;
-                isFacingRight = false;
+        if (playerHealth == null || myRigidbody == null) return;
+        if (!playerHealth.isAlive || (advancedMovement != null && advancedMovement.OverridesLegacyMovement)) return;
 
-
-           }
-           
-              
-        
-        if(!playerHealth.isAliving())
-        {
-            return;
-        }
-
-
+        ApplyHorizontalMovement();
+        ApplyGravityFeel();
     }
 
-    
-
-   private void Move(Vector2 Direction,float Speed)
+    private void ApplyHorizontalMovement()
     {
-        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
-        if (playerHealth.currenthealth <= 0 || trapThorns.isTouchingthorn)
-        {
-            return;
-        }
+        float input = 0f;
+        if (isPress_D && !isPress_A) input = 1f;
+        else if (isPress_A && !isPress_D) input = -1f;
 
-        Vector2 playerVelocity = new Vector2(Direction.x * Speed * Time.fixedDeltaTime, myRigidbody.linearVelocity.y);
-        myRigidbody.linearVelocity = playerVelocity;
+        float speedMultiplier = boosterPowerUp != null && boosterPowerUp.isBooster ? boosterSpeedMultiplier : 1f;
+        float targetSpeed = input * maxRunSpeed * speedMultiplier;
+
+        bool accelerating = Mathf.Abs(targetSpeed) > 0.01f;
+        float acceleration = isGround
+            ? (accelerating ? groundAcceleration : groundDeceleration)
+            : (accelerating ? airAcceleration : airDeceleration);
+
+        float nextX = Mathf.MoveTowards(myRigidbody.linearVelocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+        myRigidbody.linearVelocity = new Vector2(nextX, myRigidbody.linearVelocity.y);
+
+        isRunning = Mathf.Abs(nextX) > 0.1f;
+        if (input > 0f) FlipRight();
+        else if (input < 0f) FlipLeft();
+    }
+
+    private void ApplyGravityFeel()
+    {
+        float gravity = baseGravityScale;
+
+        if (myRigidbody.linearVelocity.y < -0.01f)
+            gravity *= fallGravityMultiplier;
+        else if (myRigidbody.linearVelocity.y > 0.01f && !jumpHeld)
+            gravity *= lowJumpGravityMultiplier;
+
+        myRigidbody.gravityScale = gravity;
+
+        if (myRigidbody.linearVelocity.y < -maxFallSpeed)
+            myRigidbody.linearVelocity = new Vector2(myRigidbody.linearVelocity.x, -maxFallSpeed);
     }
 
     public void Jump()
     {
-        if (levelUp.isFinish || !playerHealth.isAliving())
-        {
-            return;
-        }
+        if (playerHealth == null || !playerHealth.isAlive || (levelUp != null && levelUp.isFinish)) return;
 
+        jumpHeld = true;
+        isPress_Up = true;
         jumpBufferCounter = jumpBufferTime;
-
-        bool canJumpNow = coyoteTimeCounter > 0f || (!isGround && RemainingJumping > 0);
-        if (canJumpNow)
-        {
-            ExecuteJump();
-        }
+        TryConsumeBufferedJump();
     }
 
-    private void ExecuteJump()
+    private void TryConsumeBufferedJump()
     {
-        if (RemainingJumping <= 0)
-        {
-            return;
-        }
+        if (jumpBufferCounter <= 0f || playerHealth == null || !playerHealth.isAlive) return;
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
 
-        RemainingJumping--;
+        bool groundedJump = isGround || coyoteCounter > 0f;
+        bool airJump = !groundedJump && jumpsUsed < maxJumps - 1;
+
+        if (!groundedJump && !airJump) return;
+
+        ExecuteJump(groundedJump);
+    }
+
+    private void ExecuteJump(bool groundedJump)
+    {
+        if (groundedJump)
+            jumpsUsed = 1;
+        else
+            jumpsUsed++;
+
+        RemainingJumping = Mathf.Max(0, maxJumps - jumpsUsed);
         jumpBufferCounter = 0f;
-        coyoteTimeCounter = 0f;
+        coyoteCounter = 0f;
 
-        Vector2 playerVelocity = new Vector2(
-            myRigidbody.linearVelocity.x,
-            Vector2.up.y * JumpPower * Time.fixedDeltaTime);
+        myRigidbody.gravityScale = baseGravityScale;
+        myRigidbody.linearVelocity = new Vector2(myRigidbody.linearVelocity.x, jumpVelocity);
 
-        myRigidbody.linearVelocity = playerVelocity;
-        CharacterAnimator.SetBool("idle", false);
-        CharacterAnimator.SetBool("jump", true);
+        if (CharacterAnimator != null)
+        {
+            CharacterAnimator.SetBool("idle", false);
+            CharacterAnimator.SetBool("run", false);
+            CharacterAnimator.SetBool("jump", true);
+        }
     }
 
     public void OnPress_W()
     {
         isPress_Up = true;
+        jumpHeld = true;
     }
 
-    public void OnPressUp_W()
+    public void OnPressUp_W() => ReleaseJump();
+
+    public void UpStop() => ReleaseJump();
+
+    private void ReleaseJump()
     {
         isPress_Up = false;
+        jumpHeld = false;
+
+        if (myRigidbody != null && myRigidbody.linearVelocity.y > 0f)
+        {
+            myRigidbody.linearVelocity = new Vector2(
+                myRigidbody.linearVelocity.x,
+                myRigidbody.linearVelocity.y * jumpCutMultiplier);
+        }
     }
 
-
-
-    public void UpStop()
-    {
-        isPress_Up = false;
-        CharacterAnimator.SetBool("idle", true);
-        CharacterAnimator.SetBool("jump", false);
-    }
-
-
-
-
-   
-
-
-    public void OnButtonDown_D()
-    {
-        isPress_D = true;
-    }
-
-   
-
+    public void OnButtonDown_D() => isPress_D = true;
 
     public void OnButtonUp_D()
     {
         isPress_D = false;
         StopRight();
-       
     }
 
-   
-
-
-
-    public void StopRight()
-    {
-        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
-        myRigidbody.linearVelocity = new Vector2(0f, myRigidbody.linearVelocity.y);
-        CharacterAnimator.SetBool("idle", true);
-        CharacterAnimator.SetBool("run", false);
-        CharacterAnimator.SetBool("jump", false);
-
-        isRunning = false;
-        
-       
-           
-    }
-
-   
-    public void OnButtonDown_A()
-    {
-        isPress_A = true;
-    }
+    public void OnButtonDown_A() => isPress_A = true;
 
     public void OnButtonUp_A()
     {
         isPress_A = false;
         StopLeft();
-       
     }
 
-   
-
+    public void StopRight()
+    {
+        isPress_D = false;
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
+        isRunning = false;
+    }
 
     public void StopLeft()
     {
+        isPress_A = false;
         if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
-        myRigidbody.linearVelocity = new Vector2(0f, myRigidbody.linearVelocity.y);
-        CharacterAnimator.SetBool("idle", true);
-        CharacterAnimator.SetBool("run", false);
-        CharacterAnimator.SetBool("jump", false);
         isRunning = false;
-        
-      
-            
     }
-
-    
-
- 
 
     public void FlipRight()
     {
-        advancedMovement?.SetFacing(true);
-     
-        if(mytransform.localScale.x < 0)
-        {
-             
-           
-            Vector3 scale = mytransform.localScale;
-            scale.x *= -1;
-            mytransform.localScale = scale;
-
-           
-
-        }
-
-        if(playerHealth.currenthealth <= 0 || trapThorns.isTouchingthorn)
-        {
-            return;
-        }
-
+        SetFacing(true);
     }
 
     public void FlipLeft()
     {
-        advancedMovement?.SetFacing(false);
-        if (mytransform.localScale.x > 0)
+        SetFacing(false);
+    }
+
+    private void SetFacing(bool right)
+    {
+        if (isFacingRight == right && Mathf.Sign(transform.localScale.x) == (right ? 1f : -1f))
         {
-           
-
-            Vector3 scale = mytransform.localScale;
-            scale.x *= -1;
-            mytransform.localScale = scale;
-          
-
-        }
-
-        if(playerHealth.currenthealth <= 0 || trapThorns.isTouchingthorn)
-        {
+            advancedMovement?.SetFacing(right);
             return;
         }
 
+        isFacingRight = right;
+        Vector3 scale = transform.localScale;
+        scale.x = Mathf.Abs(scale.x) * (right ? 1f : -1f);
+        transform.localScale = scale;
+        advancedMovement?.SetFacing(right);
     }
 
-   
-}
+    private void UpdateAnimator()
+    {
+        if (CharacterAnimator == null || playerHealth == null || !playerHealth.isAlive) return;
 
+        bool airborne = !isGround;
+        CharacterAnimator.SetBool("run", isRunning && !airborne);
+        CharacterAnimator.SetBool("jump", airborne);
+        CharacterAnimator.SetBool("idle", !isRunning && !airborne);
+    }
+
+    private bool DefenceActive()
+    {
+        bool legacyDefence = trapofEnemy != null && trapofEnemy.isActiveDefence;
+        bool effectDefence = powerUps != null && powerUps.DefenderEffect != null && powerUps.DefenderEffect.isPlaying;
+        return legacyDefence || effectDefence;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("CheckPoint"))
+        {
+            TouchCountCheck++;
+            if (scenesManager != null) scenesManager.istouchCheckPoint = true;
+        }
+
+        if (other.CompareTag("Trap"))
+        {
+            if (DefenceActive()) return;
+            if (TrapEffect != null) TrapEffect.Play();
+            playerHealth?.TakeDamage();
+        }
+
+        if (other.CompareTag("Enemy") && boosterPowerUp != null && boosterPowerUp.isBooster)
+        {
+            BoxCollider2D collider = other.GetComponent<BoxCollider2D>();
+            if (collider != null) collider.isTrigger = true;
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (!other.CompareTag("Trap") || DefenceActive()) return;
+        if (TrapEffect != null && !TrapEffect.isPlaying) TrapEffect.Play();
+        playerHealth?.TakeDamage();
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("CheckPoint") && scenesManager != null)
+            scenesManager.istouchCheckPoint = false;
+
+        if (other.CompareTag("Trap") && TrapEffect != null)
+            TrapEffect.Stop();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Grounds")) return;
+        isGround = true;
+        jumpsUsed = 0;
+        RemainingJumping = maxJumps;
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Grounds")) return;
+        isGround = false;
+        coyoteCounter = coyoteTime;
+    }
+
+    private void OnBecameInvisible()
+    {
+        isOutOfViewCamera = true;
+    }
+
+    private void OnBecameVisible()
+    {
+        isOutOfViewCamera = false;
+    }
+}
