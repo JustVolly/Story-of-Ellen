@@ -53,4 +53,18 @@ campaign completion.
 See the [full level and combat playtest guide](docs/LEVEL_CONTENT_BUILD.md)
 for the action-specific acceptance checklist.
 
+### Results and safe retries
+
+- Finishing a level now opens a results screen with **Continue**, **Replay**, and
+  **Menu** actions. A paused result window no longer allows combat inputs.
+- The Level 2 Guardian fight safely restarts at full health after a player
+  death, reopening its entrance. Defeating the Guardian keeps the exit unlocked.
+- Legacy `BoosterElectrics` and `PowerUps` avoid repeated exceptions from
+  missing optional references and use properly scaled countdown timers.
+- Generated HUD upgrades are incremental, so running the scene baker again
+  adds missing buttons without duplicating the production UI.
+
+See the [reliability acceptance checklist](docs/LEVEL_CONTENT_BUILD.md)
+before considering any scene production-ready.
+
 > Editor content generation is implemented, but this branch does not claim a completed Unity Play Mode or shipping build verification. The generated scenes must be baked and tested in Unity before merging into a release branch.
