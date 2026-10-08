@@ -34,7 +34,7 @@ public static class EllenProductionLevelDesigner
     public static void ApplyToActiveScene()
     {
         Scene scene = SceneManager.GetActiveScene();
-        if (scene.name != "OneScene" && scene.name != "TwoScene") return;
+        if (scene.name != "OneScene" && scene.name != "TwoScene" && scene.name != "ThreeScene") return;
 
         if (FindInScene(RootName) != null)
         {
@@ -59,8 +59,10 @@ public static class EllenProductionLevelDesigner
 
         if (scene.name == "OneScene")
             BuildSpiritDiscovery(root, flow, director, spirit);
-        else
+        else if (scene.name == "TwoScene")
             BuildDashMastery(root, flow, director, abilities);
+        else
+            BuildSpiritAscent(root, flow, director, spirit);
 
         EditorUtility.SetDirty(root);
         Debug.Log("[Ellen Level Design] " + scene.name + " production layer built.");
