@@ -21,6 +21,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
     private float cooldownTimer;
     private float originalGravity;
     private bool facingRight = true;
+    private bool dashActive;
     private float legacyMovementLockTimer;
     private PlayerHealth health;
     private PlayerAbilityController abilities;
@@ -74,6 +75,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
         }
 
         dashTimer = dashDuration;
+        dashActive = true;
         cooldownTimer = dashCooldown;
         body.gravityScale = 0f;
         body.linearVelocity = new Vector2((facingRight ? 1f : -1f) * dashSpeed, 0f);
@@ -82,8 +84,9 @@ public class PlayerAdvancedMovement : MonoBehaviour
 
     private void EndDash()
     {
-        bool wasDashing = dashTimer > 0f;
+        bool wasDashing = dashActive;
         dashTimer = 0f;
+        dashActive = false;
 
         if (health == null || health.isAlive)
             body.gravityScale = originalGravity;
