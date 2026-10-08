@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -82,8 +83,9 @@ public sealed class EllenGameplayInput : MonoBehaviour
         Mouse mouse = Mouse.current;
         // Touchscreens can synthesize a mouse click: UI taps must not fire
         // projectiles on mobile devices.
-        if (!Application.isMobilePlatform && mouse != null)
-            firePressed |= mouse.leftButton.wasPressedThisFrame;
+        if (!Application.isMobilePlatform && mouse != null &&
+            mouse.leftButton.wasPressedThisFrame && !PointerOverUi())
+            firePressed = true;
 #elif ENABLE_LEGACY_INPUT_MANAGER
         left = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
         right = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
@@ -92,7 +94,7 @@ public sealed class EllenGameplayInput : MonoBehaviour
         wallPressed = Input.GetKeyDown(KeyCode.E);
         spiritPressed = Input.GetKeyDown(KeyCode.Q);
         firePressed = Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J) ||
-                      (!Application.isMobilePlatform && Input.GetMouseButtonDown(0));
+                      (!Application.isMobilePlatform && Input.GetMouseButtonDown(0) && !PointerOverUi());
 #endif
 
         if (movement != null)
@@ -123,6 +125,12 @@ public sealed class EllenGameplayInput : MonoBehaviour
         if (wallPressed) abilities?.TryWallJump();
         if (spiritPressed) abilities?.TryToggleSpirit();
         if (firePressed) attack?.AttackStart();
+    }
+
+    private static bool PointerOverUi()
+    {
+        EventSystem system = EventSystem.current;
+        return system != null && system.IsPointerOverGameObject();
     }
 
     private static bool PauseRequested()
