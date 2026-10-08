@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'tools/bake_three_scene_authored.py'
+      - 'tools/expand_three_scene_authored.py'
       - '.github/workflows/ellen-three-scene-bake.yml'
   workflow_dispatch:
 
@@ -22,8 +23,11 @@ jobs:
       - name: Author new ThreeScene obstacles and validate YAML IDs
         run: |
           python3 tools/bake_three_scene_authored.py
+          python3 tools/expand_three_scene_authored.py
           git diff --check -- Assets/Scenes/ThreeScene.unity
           grep -q 'AstralCryptAuthored' Assets/Scenes/ThreeScene.unity
+          grep -q 'Astral_Expansion_Barricade_01' Assets/Scenes/ThreeScene.unity
+          grep -q 'Astral_Expansion_Sentinel_02' Assets/Scenes/ThreeScene.unity
       - name: Commit only ThreeScene content
         run: |
           if ! git diff --quiet -- Assets/Scenes/ThreeScene.unity; then
