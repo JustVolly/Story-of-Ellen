@@ -238,6 +238,8 @@ public static class EllenProductionSceneUpgrader
         GameSession session = Ensure<GameSession>(root);
         SpiritWorldController spirit = Ensure<SpiritWorldController>(root);
         LevelFlowController flow = Ensure<LevelFlowController>(root);
+        SetString(flow, "levelId", scene.name);
+        SetInt(flow, "levelNumber", scene.name == "OneScene" ? 1 : 2);
         int memoryCount = UnityEngine.Object.FindObjectsByType<MemoryFragment>(FindObjectsSortMode.None).Length;
         SetInt(flow, "totalMemories", memoryCount);
         SetInt(flow, "requiredMemories", 0);
@@ -608,6 +610,16 @@ public static class EllenProductionSceneUpgrader
         SerializedProperty property = serialized.FindProperty(propertyName);
         if (property == null) return;
         property.intValue = value;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(target);
+    }
+
+    private static void SetString(UnityEngine.Object target, string propertyName, string value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property == null) return;
+        property.stringValue = value;
         serialized.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(target);
     }
