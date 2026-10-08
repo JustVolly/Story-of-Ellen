@@ -8,18 +8,21 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private ParticleSystem deathEffect;
 
     public int CurrentHealth { get; private set; }
+    public int MaxHealth => maxHealth;
+    public bool IsDead => CurrentHealth <= 0;
     public event Action<int, int> HealthChanged;
     public event Action Died;
 
     private void Awake() => CurrentHealth = maxHealth;
 
-    public void TakeDamage(int amount)
+    public bool TakeDamage(int amount)
     {
-        if (CurrentHealth <= 0 || amount <= 0) return;
+        if (CurrentHealth <= 0 || amount <= 0) return false;
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
         if (hitEffect != null) hitEffect.Play();
         HealthChanged?.Invoke(CurrentHealth, maxHealth);
         if (CurrentHealth == 0) Die();
+        return true;
     }
 
     private void Die()
