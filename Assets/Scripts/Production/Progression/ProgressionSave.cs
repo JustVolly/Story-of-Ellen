@@ -4,8 +4,8 @@ using UnityEngine;
 public static class ProgressionSave
 {
     private const string Key = "ellen.progress.v1";
-    private const int CurrentVersion = 2;
-    private const int MaxPlayableLevel = 2;
+    private const int CurrentVersion = 3;
+    private const int MaxPlayableLevel = 3;
 
     [Serializable]
     public class LevelRecord
