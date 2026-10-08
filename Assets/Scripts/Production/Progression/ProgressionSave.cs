@@ -25,6 +25,7 @@ public static class ProgressionSave
     {
         public int version = CurrentVersion;
         public int highestUnlockedLevel = 1;
+        public bool campaignCompleted;
         public int totalMemoryFragments;
         public int totalSecrets;
         public int unlockedAbilities = 4;
