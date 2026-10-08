@@ -25,8 +25,17 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
     {
         GameSession session = GameSession.Instance;
         if (session == null || flow == null) return;
-        if (memoriesText != null) memoriesText.text = $"Memories {session.MemoryFragments}/{flow.RequiredMemories}";
-        if (secretsText != null) secretsText.text = $"Secrets {session.SecretsFound}/{flow.RequiredSecrets}";
+        if (memoriesText != null)
+        {
+            memoriesText.gameObject.SetActive(flow.RequiredMemories > 0);
+            memoriesText.text = $"Memories {session.MemoryFragments}/{flow.RequiredMemories}";
+        }
+
+        if (secretsText != null)
+        {
+            secretsText.gameObject.SetActive(flow.RequiredSecrets > 0);
+            secretsText.text = $"Secrets {session.SecretsFound}/{flow.RequiredSecrets}";
+        }
         if (bossText != null)
         {
             bossText.gameObject.SetActive(flow.RequiresBossDefeat);
