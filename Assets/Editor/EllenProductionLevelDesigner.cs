@@ -138,6 +138,47 @@ public static class EllenProductionLevelDesigner
         CreateCompletionTrigger(root.transform, new Vector2(786f, -38f), flow);
     }
 
+    private static void BuildSpiritAscent(
+        GameObject root,
+        LevelFlowController flow,
+        VerticalSliceDirector director,
+        SpiritWorldController spirit)
+    {
+        ConfigureFlow(flow, "SpiritAscent", 3, 2, 0, false, 125f, 195f, 3);
+
+        CreateBeat(root.transform, "Beat_WallJump", new Vector2(18f, -37f), director, VerticalSliceDirector.Beat.Ability);
+        CreateBeat(root.transform, "Beat_Ascent", new Vector2(118f, -37f), director, VerticalSliceDirector.Beat.Traversal);
+        CreateBeat(root.transform, "Beat_SpiritChain", new Vector2(300f, -37f), director, VerticalSliceDirector.Beat.SpiritDiscovery);
+        CreateBeat(root.transform, "Beat_DashChain", new Vector2(438f, -37f), director, VerticalSliceDirector.Beat.Combat);
+        CreateBeat(root.transform, "Beat_FinalAscent", new Vector2(558f, -37f), director, VerticalSliceDirector.Beat.Traversal);
+
+        CreateShrine(root.transform, "Shrine_01", new Vector2(72f, -39f));
+        CreateWallJumpShaft(root.transform, "WallJumpShaft_01", 126f, -20f, 12f, 22f);
+        CreateMemory(root.transform, "Memory_01_FirstAscent", new Vector2(126f, -6.5f));
+
+        CreateSecret(root.transform, "Secret_SpiritBalcony", new Vector2(248f, -19f), new Vector2(9f, 7f));
+        CreateSpiritGate(root.transform, "SpiritGate_Chain", new Vector2(326f, -36.5f), new Vector2(1.6f, 12f), spirit);
+        CreateMemory(root.transform, "Memory_02_SpiritChain", new Vector2(365f, -25f));
+
+        CreateDashBarrier(root.transform, "DashBarrier_Chain", new Vector2(458f, -36.5f), new Vector2(1.6f, 12f));
+        CreateShrine(root.transform, "Shrine_02", new Vector2(505f, -39f));
+
+        CreateWallJumpShaft(root.transform, "WallJumpShaft_02", 585f, -20f, 12f, 22f);
+        CreateMemory(root.transform, "Memory_03_FinalAscent", new Vector2(585f, -6.5f));
+
+        CreateObjectiveBarrier(
+            root.transform,
+            "MasteryObjectiveGate",
+            new Vector2(690f, -36.5f),
+            new Vector2(1.6f, 12f),
+            flow);
+
+        CreateCompletionTrigger(root.transform, new Vector2(716f, -38f), flow);
+
+        CreateLandmarkParticles(root.transform, "AscentLandmark_01", new Vector2(126f, -8f), new Color(0.4f, 0.95f, 0.75f, 0.8f));
+        CreateLandmarkParticles(root.transform, "AscentLandmark_02", new Vector2(585f, -8f), new Color(0.55f, 0.65f, 1f, 0.8f));
+    }
+
     private static void ConfigureFlow(
         LevelFlowController flow,
         string levelId,
