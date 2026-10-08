@@ -482,7 +482,15 @@ IEnumerator WaitingBirthParticle()
 
         if (buildIndex == 2)
         {
-            progress.highestUnlockedLevel = Mathf.Max(progress.highestUnlockedLevel, 2);
+            progress.highestUnlockedLevel = Mathf.Max(progress.highestUnlockedLevel, 3);
+            ProgressionSave.Save(progress);
+            SceneManager.LoadScene(sceneName[3]);
+            return;
+        }
+
+        if (buildIndex == 3)
+        {
+            progress.highestUnlockedLevel = Mathf.Max(progress.highestUnlockedLevel, 3);
             progress.campaignCompleted = true;
             ProgressionSave.Save(progress);
             SceneManager.LoadScene(sceneName[0]);
@@ -502,7 +510,7 @@ IEnumerator WaitingBirthParticle()
 
           isPressStopButton = true;
          
-          if (SceneManager.GetActiveScene().buildIndex == 1 || SceneManager.GetActiveScene().buildIndex == 2 )
+          if (SceneManager.GetActiveScene().buildIndex == 1 || SceneManager.GetActiveScene().buildIndex == 2 || SceneManager.GetActiveScene().buildIndex == 3)
           {
             if(!isbackpressHomeButton)
             {
