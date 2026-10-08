@@ -123,7 +123,18 @@ public static class ProgressionSave
 
     private static void Migrate(Data data)
     {
+        int previousVersion = data.version;
+
         if (data.levels == null) data.levels = Array.Empty<LevelRecord>();
+
+        // Version 2 ended after Level 2. Players who completed that campaign
+        // should enter version 3 with the new level unlocked, not already completed.
+        if (previousVersion < 3 && data.campaignCompleted)
+        {
+            data.highestUnlockedLevel = Mathf.Max(data.highestUnlockedLevel, 3);
+            data.campaignCompleted = false;
+        }
+
         data.highestUnlockedLevel = Mathf.Clamp(data.highestUnlockedLevel, 1, MaxPlayableLevel);
         data.musicVolume = Mathf.Clamp01(data.musicVolume);
         data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
