@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerBulletDamage : MonoBehaviour
@@ -12,13 +11,13 @@ public class PlayerBulletDamage : MonoBehaviour
    
    
     EnemyDamage enemyDamage;
-    public ScriptableObject scriptableObject;
+    public CollectableCoins scriptableObject;
 
     private void Start()
     {
         enemyDamage = FindObjectOfType<EnemyDamage>();
       
-        scriptableObject.GetComponent<CollectableCoins>().experience = 7;
+        if (scriptableObject != null) scriptableObject.experience = 7;
     }
 
     void OnTriggerEnter2D(Collider2D other) 
