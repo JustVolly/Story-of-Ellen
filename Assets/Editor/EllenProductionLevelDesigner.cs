@@ -278,6 +278,41 @@ public static class EllenProductionLevelDesigner
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 
+    private static void CreateWallJumpShaft(
+        Transform parent,
+        string name,
+        float centerX,
+        float centerY,
+        float width,
+        float wallHeight)
+    {
+        GameObject root = CreateWorldObject(name, parent, new Vector2(centerX, centerY));
+
+        GameObject left = CreateWorldObject("LeftWall", root.transform, new Vector2(centerX - width * 0.5f, centerY));
+        BoxCollider2D leftCollider = left.AddComponent<BoxCollider2D>();
+        leftCollider.size = new Vector2(1.2f, wallHeight);
+
+        GameObject right = CreateWorldObject("RightWall", root.transform, new Vector2(centerX + width * 0.5f, centerY));
+        BoxCollider2D rightCollider = right.AddComponent<BoxCollider2D>();
+        rightCollider.size = new Vector2(1.2f, wallHeight);
+
+        CreateLoopingParticles(
+            left.transform,
+            "WallAura",
+            new Color(0.35f, 0.95f, 0.75f, 0.65f),
+            0.09f,
+            14f,
+            new Vector3(0.8f, wallHeight, 0.3f));
+
+        CreateLoopingParticles(
+            right.transform,
+            "WallAura",
+            new Color(0.35f, 0.95f, 0.75f, 0.65f),
+            0.09f,
+            14f,
+            new Vector3(0.8f, wallHeight, 0.3f));
+    }
+
     private static void CreateSpiritGate(
         Transform parent,
         string name,
