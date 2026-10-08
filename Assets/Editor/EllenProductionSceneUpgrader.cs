@@ -108,6 +108,7 @@ public static class EllenProductionSceneUpgrader
         errors += RequireComponent<PlayerAbilityController>(player, scene.name);
         errors += RequireComponent<PlayerRespawnController>(player, scene.name);
         errors += RequireComponent<PlayerDamagePresenter>(player, scene.name);
+        errors += RequireComponent<PlayerMovementFeedback>(player, scene.name);
 
         GameObject root = GameObject.Find("[Production]");
         if (root == null)
@@ -262,6 +263,7 @@ public static class EllenProductionSceneUpgrader
         PlayerAbilityController abilities = Ensure<PlayerAbilityController>(player);
         PlayerRespawnController respawn = Ensure<PlayerRespawnController>(player);
         PlayerDamagePresenter damagePresenter = Ensure<PlayerDamagePresenter>(player);
+        PlayerMovementFeedback movementFeedback = Ensure<PlayerMovementFeedback>(player);
 
         Transform wallCheck = player.transform.Find("WallCheck");
         if (wallCheck == null)
@@ -313,6 +315,9 @@ public static class EllenProductionSceneUpgrader
         SetObjectReference(damagePresenter, "health", health);
         SetObjectReference(damagePresenter, "cameraJuice", cameraJuice);
         SetObjectReference(damagePresenter, "hitStop", hitStop);
+        SetObjectReference(movementFeedback, "movement", player.GetComponent<PlayerMovement>());
+        SetObjectReference(movementFeedback, "advancedMovement", advancedMovement);
+        SetObjectReference(movementFeedback, "cameraJuice", cameraJuice);
 
         SpiritWorldPresentation spiritPresentation = Ensure<SpiritWorldPresentation>(presentationRoot);
         SetObjectReference(spiritPresentation, "spiritWorld", spirit);
