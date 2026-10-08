@@ -17,6 +17,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float runSpeed = 1500f;
     [SerializeField] float AirRunSpeed = 1200f;
     [SerializeField] private float JumpPower = 900f;
+    [Header("Jump Feel")]
+    [SerializeField, Range(0f, 0.3f)] private float coyoteTime = 0.12f;
+    [SerializeField, Range(0f, 0.3f)] private float jumpBufferTime = 0.12f;
+    private float coyoteTimeCounter;
+    private float jumpBufferCounter;
 
     
 
@@ -187,7 +192,9 @@ public class PlayerMovement : MonoBehaviour
 
      private void Update() 
     {
-        RemainingJumping = Mathf.Clamp(RemainingJumping, 0, 2);
+        RemainingJumping = Mathf.Clamp(RemainingJumping, 0, MaxJumping);
+        coyoteTimeCounter = isGround ? coyoteTime : Mathf.Max(0f, coyoteTimeCounter - Time.deltaTime);
+        jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.deltaTime);
         
         if (isGround)
         {
@@ -331,35 +338,43 @@ public class PlayerMovement : MonoBehaviour
 
    private void Move(Vector2 Direction,float Speed)
     {
-        Vector2 playerVelocity = new Vector2(Direction.x * Speed * Time.fixedDeltaTime, myRigidbody.linearVelocity.y);
-        myRigidbody.linearVelocity = playerVelocity;
-       
-
-        if(playerHealth.currenthealth <= 0 || trapThorns.isTouchingthorn)
+        if (playerHealth.currenthealth <= 0 || trapThorns.isTouchingthorn)
         {
             return;
         }
+
+        Vector2 playerVelocity = new Vector2(Direction.x * Speed * Time.fixedDeltaTime, myRigidbody.linearVelocity.y);
+        myRigidbody.linearVelocity = playerVelocity;
     }
 
     public void Jump()
     {
-        if(levelUp.isFinish) {  return; }
-        if (isGround && RemainingJumping == 2 || !isGround && RemainingJumping == 1)
-        {
-            
-            RemainingJumping--;
-            Vector2 playerVelocity = new Vector2(myRigidbody.linearVelocity.x, Vector2.up.y * JumpPower * Time.fixedDeltaTime);
-            myRigidbody.linearVelocity = playerVelocity;
-            CharacterAnimator.SetBool("idle", false);
-            CharacterAnimator.SetBool("jump", true);
-
-        }
-
-        if(!playerHealth.isAliving() || (RemainingJumping == 0 && !isGround))
+        if (levelUp.isFinish || !playerHealth.isAliving())
         {
             return;
         }
 
+        jumpBufferCounter = jumpBufferTime;
+
+        bool canUseGroundJump = coyoteTimeCounter > 0f && RemainingJumping > 0;
+        bool canUseAirJump = !isGround && RemainingJumping > 0;
+
+        if (!canUseGroundJump && !canUseAirJump)
+        {
+            return;
+        }
+
+        RemainingJumping--;
+        jumpBufferCounter = 0f;
+        coyoteTimeCounter = 0f;
+
+        Vector2 playerVelocity = new Vector2(
+            myRigidbody.linearVelocity.x,
+            Vector2.up.y * JumpPower * Time.fixedDeltaTime);
+
+        myRigidbody.linearVelocity = playerVelocity;
+        CharacterAnimator.SetBool("idle", false);
+        CharacterAnimator.SetBool("jump", true);
     }
 
     public void OnPress_W()
