@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public static class EllenVerticalSliceValidator
 {
@@ -26,6 +27,19 @@ public static class EllenVerticalSliceValidator
         if (memories < 1) Debug.LogWarning("[Ellen Vertical Slice] Add at least one MemoryFragment.");
         if (shrines < 1) Debug.LogWarning("[Ellen Vertical Slice] Add at least one SpiritShrine.");
         if (enemies < 1) Debug.LogWarning("[Ellen Vertical Slice] Add at least one production EnemyHealth encounter.");
+
+        ValidateMetaFiles("Assets/Scripts/Production");
+    }
+
+    private static void ValidateMetaFiles(string root)
+    {
+        if (!Directory.Exists(root)) return;
+        foreach (string file in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+        {
+            if (file.EndsWith(".meta")) continue;
+            if (!File.Exists(file + ".meta"))
+                Debug.LogError("[Ellen Vertical Slice] Missing Unity meta file: " + file + ".meta");
+        }
     }
 
     private static int Require<T>() where T : Object
