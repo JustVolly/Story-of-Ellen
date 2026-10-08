@@ -98,6 +98,9 @@ public class PlayerMovement : MonoBehaviour
         coyoteCounter = isGround ? coyoteTime : Mathf.Max(0f, coyoteCounter - Time.deltaTime);
         jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.deltaTime);
 
+        if (!isGround && coyoteCounter <= 0f && jumpsUsed == 0)
+            jumpsUsed = 1;
+
         if (isGround)
         {
             jumpsUsed = 0;
@@ -176,7 +179,7 @@ public class PlayerMovement : MonoBehaviour
         if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
 
         bool groundedJump = isGround || coyoteCounter > 0f;
-        bool airJump = !groundedJump && jumpsUsed < maxJumps - 1;
+        bool airJump = !groundedJump && jumpsUsed < maxJumps;
 
         if (!groundedJump && !airJump) return;
 
