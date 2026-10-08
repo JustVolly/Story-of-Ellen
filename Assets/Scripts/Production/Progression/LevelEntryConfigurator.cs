@@ -14,7 +14,21 @@ public class LevelEntryConfigurator : MonoBehaviour
         data.highestUnlockedLevel = Mathf.Max(data.highestUnlockedLevel, levelNumber);
         ProgressionSave.Save(data);
 
-        if (abilities != null && grantOnStart != PlayerAbilityController.Ability.None)
-            abilities.Unlock(grantOnStart);
+        GrantConfiguredAbilities();
+    }
+
+    private void GrantConfiguredAbilities()
+    {
+        if (abilities == null || grantOnStart == PlayerAbilityController.Ability.None) return;
+
+        GrantIfConfigured(PlayerAbilityController.Ability.Dash);
+        GrantIfConfigured(PlayerAbilityController.Ability.WallJump);
+        GrantIfConfigured(PlayerAbilityController.Ability.SpiritWorld);
+    }
+
+    private void GrantIfConfigured(PlayerAbilityController.Ability ability)
+    {
+        if ((grantOnStart & ability) == ability)
+            abilities.Unlock(ability);
     }
 }
