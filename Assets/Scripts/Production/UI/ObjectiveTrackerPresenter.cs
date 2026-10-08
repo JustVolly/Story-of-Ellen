@@ -7,6 +7,7 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
     [SerializeField] private TextMeshProUGUI memoriesText;
     [SerializeField] private TextMeshProUGUI secretsText;
     [SerializeField] private TextMeshProUGUI bossText;
+    [SerializeField] private GameObject visualRoot;
     [SerializeField] private GameObject root;
 
     private GameSession session;
@@ -69,5 +70,8 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
             bossText.gameObject.SetActive(flow.RequiresBossDefeat);
             bossText.text = flow.BossDefeated ? "Guardian Defeated" : "Defeat the Guardian";
         }
+
+        bool showAny = flow.RequiredMemories > 0 || flow.RequiredSecrets > 0 || flow.RequiresBossDefeat;
+        if (visualRoot != null) visualRoot.SetActive(showAny);
     }
 }
