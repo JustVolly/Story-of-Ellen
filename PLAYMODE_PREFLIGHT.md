@@ -11,6 +11,8 @@
 Run this after Unity finishes importing the branch and before tuning gameplay.
 
 ## Import and compile
+- Run `Ellen/Production/Upgrade Build Scenes` once after import. This upgrades StartingScene, OneScene and TwoScene, saves them, and wires the production HUD/menu/player systems.
+- Open each build scene and run `Ellen/Production/Validate Current Scene`; fix every reported error before tuning.
 - Confirm Console has zero compile errors.
 - Confirm the committed .meta files under Assets/Scripts/Production and Assets/Editor import without GUID conflicts or missing-meta errors.
 - Open OneScene and run Ellen > Validate Vertical Slice.
@@ -21,11 +23,14 @@ Run this after Unity finishes importing the branch and before tuning gameplay.
 - Die to enemy, trap, thorns, and timeout: all paths use PlayerHealth and respawn once.
 - Respawn restores gravity, colliders, animation, controls, and full health.
 - Releasing left/right while airborne preserves vertical velocity.
+- Run acceleration/deceleration and turn acceleration feel responsive without instant velocity snapping.
+- Short jump release produces a clean jump cut; held jump gets apex hang and a faster fall afterward.
+- A jump pressed just before landing buffers into the landing instead of wasting the air jump.
 - Double jump count resets on landing.
 
 ## Spirit World
 - Material-only objects are correct on scene start.
-- Toggle Spirit World: energy drains, HUD updates, presentation transition plays.
+- Tap the Spirit HUD: Spirit World toggles, energy drains, HUD updates, and background presentation transitions.
 - Energy reaching zero returns to Material World.
 - SpiritGate collider/visual state matches the active world.
 - First Spirit entry shows tutorial once.
@@ -34,10 +39,13 @@ Run this after Unity finishes importing the branch and before tuning gameplay.
 - Shrine becomes active checkpoint and heals.
 - Memory and secret counters update objective HUD.
 - Combat arena locks once, tracks all configured enemies, then unlocks.
+- Entering TwoScene unlocks Dash once, displays the ability toast, persists after restart, and exposes the mobile DASH control.
 - Ability pickup unlocks once, displays feedback, persists after restart.
 - Traversal uses the unlocked ability without PlayerMovement overriding it.
 
 ## Boss and results
+- TwoScene final win action records campaign completion and returns to StartingScene.
+- Main menu then shows REPLAY LEVEL 2; NEW JOURNEY resets level/ability progression while preserving records/settings.
 - Boss HUD appears at arena start and tracks HP.
 - Phase 2 and 3 trigger at expected thresholds.
 - Boss defeat unlocks arena and completes boss objective.
