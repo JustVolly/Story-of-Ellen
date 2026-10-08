@@ -425,7 +425,7 @@ public void CalculateDistance()
     {
         isRespawn = true;
         levelUp.isFinish = false;
-        playerHealth.currenthealth = 3;
+        playerHealth.ResetHealth();
        
         
 
@@ -440,10 +440,6 @@ public void CalculateDistance()
         playerMovement.CharacterAnimator.SetBool("idle", true);
         playerMovement.CharacterAnimator.SetBool("run", false);
         playerMovement.CharacterAnimator.SetBool("jump", false);
-
-        canvascontrol.Star1.fillAmount = 1f;
-        canvascontrol.Star2.fillAmount = 1f;
-        canvascontrol.Star3.fillAmount = 1f;
 
 
         player.rotation = respawnPoint.rotation;
