@@ -22,7 +22,7 @@ public class SpiritWorldController : MonoBehaviour
     private void Awake()
     {
         Energy = maxEnergy;
-        ApplyWorld(false, true);
+        ApplyWorld(false, true, false);
     }
 
     private void Update()
@@ -49,15 +49,15 @@ public class SpiritWorldController : MonoBehaviour
 
     public void ExitSpiritWorld() => ApplyWorld(false);
 
-    private void ApplyWorld(bool spirit, bool force = false)
+    private void ApplyWorld(bool spirit, bool force = false, bool playFeedback = true)
     {
         if (!force && initialized && IsSpiritWorld == spirit) return;
         initialized = true;
         IsSpiritWorld = spirit;
         SetObjects(spiritOnlyObjects, spirit);
         SetObjects(materialOnlyObjects, !spirit);
-        if (transitionEffect != null) transitionEffect.Play();
-        if (transitionAudio != null) transitionAudio.Play();
+        if (playFeedback && transitionEffect != null) transitionEffect.Play();
+        if (playFeedback && transitionAudio != null && transitionAudio.clip != null) transitionAudio.Play();
         WorldChanged?.Invoke(spirit);
     }
 
