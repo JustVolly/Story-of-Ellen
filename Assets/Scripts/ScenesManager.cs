@@ -163,11 +163,6 @@ public class ScenesManager : MonoBehaviour
         
         CurrentDistance = Mathf.Clamp(CurrentDistance, 0, TotalDistance);
        
-        if (startScene.isPlay || !isPressStopButton)
-        {
-            Time.timeScale = 1f;
-        }
-
         AnimationControl();
         SetLostPanel();
         CheckActiveScene();
@@ -384,8 +379,6 @@ public void CalculateDistance()
          if (canvascontrol.CurrentTime <= 0 || playerHealth.currenthealth <= 0)
         {
            Animator PlayerAnim = GameObject.FindWithTag("Player").GetComponent<Animator>();
-           CompositeCollider2D GroundComposite = GameObject.FindWithTag("Grounds").GetComponent<CompositeCollider2D>();
-           
            if (PlayerAnim.GetBool("idle"))
            {
                PlayerAnim.SetBool("idle",false);
@@ -529,6 +522,7 @@ IEnumerator WaitingBirthParticle()
 
     public void ResumeGame()
     {
+         isPressStopButton = false;
          Time.timeScale = 1f;
          StopPanel.SetActive(false);
 
@@ -537,7 +531,7 @@ IEnumerator WaitingBirthParticle()
     public void StopRespawn()
     {
         Time.timeScale = 1f;
-        playerHealth.currenthealth = 3;
+        playerHealth.ResetHealth();
           
         player.rotation = respawnPoint.rotation;
         player.position = respawnPoint.position;
