@@ -17,11 +17,12 @@ public class SpiritWorldController : MonoBehaviour
 
     public event Action<bool> WorldChanged;
     public event Action<float> EnergyChanged;
+    private bool initialized;
 
     private void Awake()
     {
         Energy = maxEnergy;
-        ApplyWorld(false);
+        ApplyWorld(false, true);
     }
 
     private void Update()
@@ -48,9 +49,10 @@ public class SpiritWorldController : MonoBehaviour
 
     public void ExitSpiritWorld() => ApplyWorld(false);
 
-    private void ApplyWorld(bool spirit)
+    private void ApplyWorld(bool spirit, bool force = false)
     {
-        if (IsSpiritWorld == spirit && Application.isPlaying) return;
+        if (!force && initialized && IsSpiritWorld == spirit) return;
+        initialized = true;
         IsSpiritWorld = spirit;
         SetObjects(spiritOnlyObjects, spirit);
         SetObjects(materialOnlyObjects, !spirit);
