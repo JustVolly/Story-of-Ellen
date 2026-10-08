@@ -34,13 +34,14 @@ public class LoaderPanel : MonoBehaviour
         while (!asyncLoad.isDone)
         {
             float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
-            loadingBar.fillAmount = progress * Time.deltaTime;
+            loadingBar.fillAmount = progress;
             int percent = (int)(progress * 100f);
             loadingText.text = percent.ToString();
 
             yield return null;
         }
 
-        loadingScreen.SetActive(false);
+        loadingBar.fillAmount = 1f;
+        loadingText.text = "100";
     }
 }
