@@ -21,6 +21,10 @@ public class PlayerHealth : MonoBehaviour
     private CapsuleCollider2D playerCapsuleCollider;
     private float invulnerabilityTimer;
     private bool deathApplied;
+    private float initialGravityScale;
+    private bool initialBoxTrigger;
+    private bool initialCapsuleTrigger;
+    private bool initialCompositeTrigger;
 
     public CompositeCollider2D CompositeCollider;
 
@@ -30,6 +34,10 @@ public class PlayerHealth : MonoBehaviour
         playerBoxCollider = GetComponent<BoxCollider2D>();
         playerCapsuleCollider = GetComponent<CapsuleCollider2D>();
         playerMovement = GetComponent<PlayerMovement>();
+        if (playerRigid != null) initialGravityScale = playerRigid.gravityScale;
+        if (playerBoxCollider != null) initialBoxTrigger = playerBoxCollider.isTrigger;
+        if (playerCapsuleCollider != null) initialCapsuleTrigger = playerCapsuleCollider.isTrigger;
+        if (CompositeCollider != null) initialCompositeTrigger = CompositeCollider.isTrigger;
     }
 
     private void Start()
@@ -86,6 +94,10 @@ public class PlayerHealth : MonoBehaviour
         isAlive = true;
         deathApplied = false;
         invulnerabilityTimer = 0f;
+        if (playerRigid != null) { playerRigid.gravityScale = initialGravityScale; playerRigid.linearVelocity = Vector2.zero; }
+        if (playerBoxCollider != null) playerBoxCollider.isTrigger = initialBoxTrigger;
+        if (playerCapsuleCollider != null) playerCapsuleCollider.isTrigger = initialCapsuleTrigger;
+        if (CompositeCollider != null) CompositeCollider.isTrigger = initialCompositeTrigger;
         HealthChanged?.Invoke(currenthealth, maxHealth);
     }
 
@@ -125,6 +137,7 @@ public class PlayerHealth : MonoBehaviour
             playerCapsuleCollider.isTrigger = true;
         }
 
+        GameSession.Instance?.RegisterDeath();
         Died?.Invoke();
     }
 
