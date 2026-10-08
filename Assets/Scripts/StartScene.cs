@@ -141,19 +141,10 @@ public void StartGame()
     {
         isPlay = true;
 
+        Time.timeScale = 1f;
         loaderPanel.LoadScene("OneScene");
 
-        if (loaderPanel.loadingBar.fillAmount == 1)
-        {
-            if (SceneManager.GetActiveScene().buildIndex == 0)
-            {
-                  SceneManager.LoadScene(1);
-                  Time.timeScale = 1f;
-            }
 
-        }
-
-        
     }
 }
     public void Quit()
