@@ -74,6 +74,18 @@ public static class EllenProductionSceneUpgrader
             errors++;
         }
 
+        if (UnityEngine.Object.FindFirstObjectByType<StartScene>() == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing StartScene controller.");
+            errors++;
+        }
+
+        if (FindSceneObjectByName(scene, "ReplayLevelOne") == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing ReplayLevelOne button.");
+            errors++;
+        }
+
         errors += ValidateCanvasScaler(canvas, scene.name, new Vector2(800f, 500f));
         return errors;
     }
@@ -192,6 +204,43 @@ public static class EllenProductionSceneUpgrader
         RectTransform title = FindRectTransform(canvas.transform, "StoryOfEllen");
         if (title == null) title = FindRectTransform(canvas.transform, "StoryOfEllen (1)");
         SetObjectReference(presentation, "title", title);
+
+        StartScene controller = UnityEngine.Object.FindFirstObjectByType<StartScene>();
+        GameObject playObject = FindSceneObjectByName(scene, "Play");
+        if (controller != null && playObject != null)
+        {
+            TextMeshProUGUI playLabel = playObject.GetComponentInChildren<TextMeshProUGUI>(true);
+            SetObjectReference(controller, "playLabel", playLabel);
+
+            GameObject replayObject = FindSceneObjectByName(scene, "ReplayLevelOne");
+            if (replayObject == null)
+            {
+                replayObject = UnityEngine.Object.Instantiate(playObject, playObject.transform.parent);
+                Undo.RegisterCreatedObjectUndo(replayObject, "Create Replay Level 1 button");
+                replayObject.name = "ReplayLevelOne";
+
+                RectTransform replayRect = replayObject.GetComponent<RectTransform>();
+                RectTransform playRect = playObject.GetComponent<RectTransform>();
+                if (replayRect != null && playRect != null)
+                {
+                    replayRect.anchoredPosition = new Vector2(playRect.anchoredPosition.x, 79f);
+                    replayRect.sizeDelta = new Vector2(-520f, playRect.sizeDelta.y);
+                }
+
+                Button replayButton = replayObject.GetComponent<Button>();
+                if (replayButton != null)
+                {
+                    replayButton.onClick = new Button.ButtonClickedEvent();
+                    UnityEventTools.AddPersistentListener(replayButton.onClick, controller.StartFromBeginning);
+                }
+
+                TextMeshProUGUI replayLabel = replayObject.GetComponentInChildren<TextMeshProUGUI>(true);
+                if (replayLabel != null) replayLabel.text = "REPLAY LEVEL 1";
+            }
+
+            SetObjectReference(controller, "replayLevelOneButton", replayObject);
+            replayObject.SetActive(false);
+        }
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
