@@ -27,6 +27,8 @@ ASSETS = [
     "Assets/BigManJD/Platformer Tileset - Pixelart Grasslands/Prefabs/Bush1.prefab",
     "Assets/BigManJD/Platformer Tileset - Pixelart Grasslands/Prefabs/Rock1.prefab",
     "Assets/BigManJD/Platformer Tileset - Pixelart Grasslands/Prefabs/WoodenSign.prefab",
+    "Assets/Scripts/Production/Audio/EllenAmbienceVolume.cs",
+    "Assets/Scripts/Production/Audio/EllenAmbienceVolume.cs.meta",
     "Assets/Editor/EllenProductionSceneInstaller.cs",
     "Assets/Editor/EllenProductionLevelDesigner.cs",
     "Assets/Editor/EllenLevelArtBuilder.cs",
