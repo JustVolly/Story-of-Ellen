@@ -4,6 +4,7 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 // A single, repeatable entry point for the whole vertical-slice campaign.
@@ -129,6 +130,7 @@ public static class EllenCampaignContentBuilder
         errors += ExpectComponent<SpiritWorldController>(scene);
         errors += ExpectComponent<LevelFlowController>(scene);
         errors += ExpectComponent<LevelCompletionTrigger>(scene);
+        errors += ValidateResultNavigation(scene);
         errors += ExpectComponent<LevelEntryConfigurator>(scene);
         errors += ExpectComponent<SpiritShrine>(scene);
         errors += ExpectComponent<MemoryFragment>(scene);
@@ -142,6 +144,7 @@ public static class EllenCampaignContentBuilder
         {
             errors += ExpectComponent<BossController>(scene);
             errors += ExpectComponent<BossArenaController>(scene);
+            errors += ValidateBossArena(scene);
         }
         if (scene.name == "ThreeScene")
         {
@@ -152,6 +155,75 @@ public static class EllenCampaignContentBuilder
         Debug.Log("[Ellen Campaign] " + scene.name + ": " +
             (errors == 0 ? "structural references ready" : errors + " errors"));
         return errors;
+    }
+
+    private static int ValidateResultNavigation(Scene scene)
+    {
+        int errors = 0;
+        LevelResultPresenter presenter = FindSceneComponent<LevelResultPresenter>(scene);
+        LevelResultRecorder recorder = FindSceneComponent<LevelResultRecorder>(scene);
+        if (presenter == null || recorder == null)
+        {
+            Debug.LogError("[Ellen Campaign] " + scene.name +
+                " missing result presenter or persistence recorder");
+            return 1;
+        }
+        errors += ExpectReference(new SerializedObject(presenter), "flow", scene.name, presenter.name);
+        errors += ExpectReference(new SerializedObject(presenter), "panel", scene.name, presenter.name);
+        errors += ExpectReference(new SerializedObject(recorder), "flow", scene.name, recorder.name);
+
+        string[] buttons = { "ContinueButton", "ReplayButton", "MenuButton" };
+        string[] methods = { "ContinueCampaign", "ReplayLevel", "ReturnToMenu" };
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = FindSceneButton(scene, buttons[i]);
+            if (button == null)
+            {
+                Debug.LogError("[Ellen Campaign] " + scene.name + " missing " + buttons[i]);
+                errors++;
+                continue;
+            }
+
+            if (button.onClick.GetPersistentEventCount() == 0 ||
+                button.onClick.GetPersistentTarget(0) != presenter ||
+                button.onClick.GetPersistentMethodName(0) != methods[i])
+            {
+                Debug.LogError("[Ellen Campaign] " + scene.name + "/" + buttons[i] +
+                    " is not wired to LevelResultPresenter." + methods[i]);
+                errors++;
+            }
+        }
+        return errors;
+    }
+
+    private static int ValidateBossArena(Scene scene)
+    {
+        BossArenaController arena = FindSceneComponent<BossArenaController>(scene);
+        if (arena == null) return 1;
+        int errors = 0;
+        SerializedObject so = new SerializedObject(arena);
+        foreach (string field in new[] { "boss", "bossRoot", "entranceBarrier",
+                                        "exitBarrier", "bossHud" })
+            errors += ExpectReference(so, field, scene.name, arena.name);
+        return errors;
+    }
+
+    private static T FindSceneComponent<T>(Scene scene) where T : Component
+    {
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            T found = root.GetComponentInChildren<T>(true);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private static Button FindSceneButton(Scene scene, string objectName)
+    {
+        foreach (GameObject root in scene.GetRootGameObjects())
+            foreach (Button button in root.GetComponentsInChildren<Button>(true))
+                if (button.name == objectName) return button;
+        return null;
     }
 
     private static int ValidateAbilityPuzzles(Scene scene)
