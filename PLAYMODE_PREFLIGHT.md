@@ -61,3 +61,22 @@ Run this after Unity finishes importing the branch and before tuning gameplay.
 ## Mobile
 - Touch movement, jump, attack, Spirit toggle, Dash, and Wall Jump are reachable.
 - Test target device for stable frame pacing and zero recurring GC spikes during normal gameplay.
+
+## Level 1 — Spirit Discovery
+- Confirm the first Spirit gate near the early route cannot be crossed in Material World and opens immediately in Spirit World.
+- Collect any one of the three Memory Fragments; the final Memory objective barrier must then unlock.
+- Verify the high-path Memory is reachable without requiring unintended collision exploits.
+- Activate both Spirit Shrines and confirm each becomes the active respawn point.
+- Check the upper-ruins secret is optional and does not block completion.
+- Confirm the second Spirit gate creates a final mastery check without trapping the player at zero Spirit energy.
+- Reach the result trigger before the legacy Finish and confirm rank/time/deaths/memories are recorded once.
+
+## Level 2 — Dash Mastery
+- Dash unlocks on entry and the DASH mobile button is visible and usable.
+- Both orange Dash barriers block normal movement, cannot be jumped over accidentally, and break during Dash even if Dash starts while already inside the sensor.
+- Activate both shrines and confirm the second checkpoint prevents replaying too much of the level after a boss death.
+- Confirm all three Memory Fragments and the secret are optional exploration rewards.
+- Enter the Guardian arena: entrance closes, exit stays locked, boss and boss HUD activate.
+- Guardian takes projectile damage through EnemyHealth, changes phase at roughly 66% and 33% HP, and cannot leave the intended arena.
+- On Guardian death, barriers open, boss HUD hides, result data records once, and the legacy Finish remains reachable.
+- Completing the final Finish records campaign completion and returns to StartingScene.
