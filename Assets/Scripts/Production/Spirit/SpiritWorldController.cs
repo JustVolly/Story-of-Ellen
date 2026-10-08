@@ -41,6 +41,21 @@ public class SpiritWorldController : MonoBehaviour
         if (!Mathf.Approximately(previous, Energy)) EnergyChanged?.Invoke(NormalizedEnergy);
     }
 
+    /// <summary>
+    /// Restore a bounded amount of energy. Wells may call this while Ellen is
+    /// in either world; spent energy is never allowed to exceed maxEnergy.
+    /// Returns the amount actually restored (zero when already full).
+    /// </summary>
+    public float RestoreEnergy(float amount)
+    {
+        if (amount <= 0f || maxEnergy <= 0f) return 0f;
+        float before = Energy;
+        Energy = Mathf.Clamp(Energy + amount, 0f, maxEnergy);
+        float restored = Energy - before;
+        if (restored > 0.0001f) EnergyChanged?.Invoke(NormalizedEnergy);
+        return restored;
+    }
+
     public void ToggleSpiritWorld()
     {
         if (IsSpiritWorld) { ApplyWorld(false); return; }
