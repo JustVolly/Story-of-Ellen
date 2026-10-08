@@ -20,8 +20,19 @@ public class BoosterElectrics : MonoBehaviour
    private void Start() 
    {
       
-      CurrentDuration = PowerUpSettings.TotalDuration;
-      ElectricEffect.gameObject.SetActive(false);
+      if (PowerUpSettings == null)
+      {
+          Debug.LogWarning("[BoosterElectrics] Missing PowerUpSettings; effect disabled.", this);
+          enabled = false;
+          return;
+      }
+      CurrentDuration = Mathf.Max(1, PowerUpSettings.TotalDuration);
+      if (ElectricEffect != null) ElectricEffect.gameObject.SetActive(false);
+      if (CharacterColor == null)
+      {
+          PlayerMovement player = FindObjectOfType<PlayerMovement>();
+          if (player != null) CharacterColor = player.GetComponentInChildren<SpriteRenderer>();
+      }
       
       boosterPowerUp = FindObjectOfType<BoosterPowerUp>();
 
@@ -31,28 +42,36 @@ public class BoosterElectrics : MonoBehaviour
 
    void Update() 
    {
+       if (boosterPowerUp == null || PowerUpSettings == null) return;
        if (boosterPowerUp.isBooster)
        {
            CurrentDuration = Mathf.Clamp(CurrentDuration,0,PowerUpSettings.TotalDuration);
-           PowerUpSettings.CountTime -= Time.timeScale * PowerUpSettings.TimeSpeed * Time.deltaTime;
+           // Time.deltaTime already includes the time scale.
+           PowerUpSettings.CountTime -= PowerUpSettings.TimeSpeed * Time.deltaTime;
           
 
            if (PowerUpSettings.CountTime <= 0f)
             {
-              ElectricEffect.gameObject.SetActive(true);
-              ElectricEffect.Play();
+              if (ElectricEffect != null)
+              {
+                  ElectricEffect.gameObject.SetActive(true);
+                  ElectricEffect.Play();
+              }
               CurrentDuration--;
               PowerUpSettings.CountTime = 10f;
-              CharacterColor.color = Color.red;
+              if (CharacterColor != null) CharacterColor.color = Color.red;
             }  
 
             if (CurrentDuration == 0)
             {
-                ElectricEffect.Stop();
-                ElectricEffect.gameObject.SetActive(false);
+                if (ElectricEffect != null)
+                {
+                    ElectricEffect.Stop();
+                    ElectricEffect.gameObject.SetActive(false);
+                }
                 boosterPowerUp.isBooster = false;
-                CharacterColor.color = Color.white;
-                CurrentDuration = 10;
+                if (CharacterColor != null) CharacterColor.color = Color.white;
+                CurrentDuration = Mathf.Max(1, PowerUpSettings.TotalDuration);
             }
 
        }

@@ -151,7 +151,43 @@ required_wiring = {
     ),
     "Assets/Editor/EllenCampaignContentBuilder.cs": (
         "ValidateAbilityPuzzles(scene)", "expectedSeals", "expectedWells",
-        "ExpectReference(so,",
+        "ExpectReference(so,", "ValidateResultNavigation(scene)",
+        "ValidateBossArena(scene)", "GetPersistentMethodName(0)",
+    ),
+    "Assets/Editor/EllenProductionSceneInstaller.cs": (
+        "UpgradeExistingResultNavigation(existing)",
+        "CreateResultActionButton(", "ContinueCampaign", "ReplayLevel", "ReturnToMenu",
+    ),
+    "Assets/Scripts/Production/UI/LevelResultPresenter.cs": (
+        "new WaitForSecondsRealtime(revealDelay)", "Time.timeScale = 0f",
+        "RestoreTimeScale()", "ContinueCampaign()", "ReplayLevel()",
+        "ReturnToMenu()", "SceneManager.LoadScene(sceneName)",
+    ),
+    "Assets/Scripts/Production/Boss/BossArenaController.cs": (
+        "playerHealth.Died += OnPlayerDied", "ResetUndefeatedEncounter()",
+        "boss?.ResetForRetry()", "entranceBarrier.SetActive(false)",
+        "Physics2D.SyncTransforms()",
+    ),
+    "Assets/Scripts/Production/Boss/BossController.cs": (
+        "void ResetForRetry()", "health.RestoreFullHealth()",
+        "CurrentPhase = Phase.One",
+    ),
+    "Assets/Scripts/Production/Enemies/EnemyHealth.cs": (
+        "void RestoreFullHealth()", "if (IsDead) return;",
+    ),
+    "Assets/Scripts/Production/World/LevelCompletionTrigger.cs": (
+        "OnTriggerStay2D(Collider2D other)", "flow.TryComplete()",
+    ),
+    "Assets/Scripts/CharacterAttack.cs": (
+        "Time.timeScale <= 0f", "AttackStart()",
+    ),
+    "Assets/Scripts/BoosterElectrics.cs": (
+        "boosterPowerUp == null || PowerUpSettings == null",
+        "if (ElectricEffect != null)", "if (CharacterColor != null)",
+    ),
+    "Assets/Scripts/PowerUps.cs": (
+        "PowerUpSettings == null || defencePowerUp == null",
+        "if (DefenderEffect != null)", "if (trapofEnemy != null)",
     ),
 }
 for path, tokens in required_wiring.items():

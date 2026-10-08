@@ -15,6 +15,14 @@ public class EnemyHealth : MonoBehaviour
 
     private void Awake() => CurrentHealth = maxHealth;
 
+    /// <summary>Refill a living enemy for an arena retry without spawning a replacement.</summary>
+    public void RestoreFullHealth()
+    {
+        if (IsDead) return; // Destroy was already scheduled; cannot resurrect it.
+        CurrentHealth = maxHealth;
+        HealthChanged?.Invoke(CurrentHealth, maxHealth);
+    }
+
     public bool TakeDamage(int amount)
     {
         if (CurrentHealth <= 0 || amount <= 0) return false;

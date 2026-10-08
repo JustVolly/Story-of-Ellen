@@ -1,7 +1,12 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// End-of-level state and navigation. The result freezes gameplay with unscaled
+/// UI timing, then offers explicit Continue/Replay/Menu actions.
+/// </summary>
 public class LevelResultPresenter : MonoBehaviour
 {
     [SerializeField] private LevelFlowController flow;
@@ -14,9 +19,12 @@ public class LevelResultPresenter : MonoBehaviour
     [SerializeField, Min(0f)] private float revealDelay = 1f;
 
     private Coroutine presentation;
+    private bool resultShown;
+    private bool ownsPause;
 
     private void Awake()
     {
+        if (flow == null) flow = FindObjectOfType<LevelFlowController>();
         if (panel != null) panel.SetActive(false);
     }
 
@@ -30,10 +38,17 @@ public class LevelResultPresenter : MonoBehaviour
         if (flow != null) flow.LevelCompleted -= Present;
         if (presentation != null) StopCoroutine(presentation);
         presentation = null;
+        // Also recover time scale if the presenter gets disabled unexpectedly.
+        RestoreTimeScale();
     }
 
     private void Present(LevelResult result)
     {
+        if (resultShown) return;
+        resultShown = true;
+        ownsPause = Time.timeScale > 0f;
+        if (ownsPause) Time.timeScale = 0f;
+
         if (presentation != null) StopCoroutine(presentation);
         presentation = StartCoroutine(PresentRoutine(result));
     }
@@ -51,5 +66,45 @@ public class LevelResultPresenter : MonoBehaviour
 
         if (panel != null) panel.SetActive(true);
         presentation = null;
+    }
+
+    public void ContinueCampaign()
+    {
+        if (!resultShown) return;
+        string current = SceneManager.GetActiveScene().name;
+        string next = current == "OneScene" ? "TwoScene"
+            : current == "TwoScene" ? "ThreeScene" : "StartingScene";
+        TravelTo(next);
+    }
+
+    public void ReplayLevel()
+    {
+        if (!resultShown) return;
+        TravelTo(SceneManager.GetActiveScene().name);
+    }
+
+    public void ReturnToMenu()
+    {
+        if (!resultShown) return;
+        TravelTo("StartingScene");
+    }
+
+    private void TravelTo(string sceneName)
+    {
+        if (!Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Debug.LogError("[Ellen Result] Next scene missing from Build Settings: " + sceneName, this);
+            return;
+        }
+
+        RestoreTimeScale();
+        SceneManager.LoadScene(sceneName);
+    }
+
+    private void RestoreTimeScale()
+    {
+        if (!ownsPause) return;
+        Time.timeScale = 1f;
+        ownsPause = false;
     }
 }

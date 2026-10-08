@@ -458,7 +458,11 @@ public static class EllenProductionSceneInstaller
     private static void EnsureProductionHud(Canvas canvas, SpiritWorldController spirit, LevelFlowController flow, PlayerAbilityController abilities)
     {
         GameObject existing = FindInScene("ProductionHUD");
-        if (existing != null) return;
+        if (existing != null)
+        {
+            UpgradeExistingResultNavigation(existing);
+            return;
+        }
 
         GameObject hud = new GameObject("ProductionHUD", typeof(RectTransform));
         Undo.RegisterCreatedObjectUndo(hud, "Create Production HUD");
@@ -648,8 +652,9 @@ public static class EllenProductionSceneInstaller
         resultPanelRect.anchorMin = resultPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
         resultPanelRect.pivot = new Vector2(0.5f, 0.5f);
         resultPanelRect.anchoredPosition = Vector2.zero;
-        resultPanelRect.sizeDelta = new Vector2(520f, 310f);
-        resultPanel.GetComponent<Image>().raycastTarget = false;
+        resultPanelRect.sizeDelta = new Vector2(560f, 420f);
+        // Block clicks intended for the playfield under the result window.
+        resultPanel.GetComponent<Image>().raycastTarget = true;
 
         GameObject rankObject = CreateText("ResultRank", resultPanelRect, "A", 58f);
         RectTransform rankRect = rankObject.GetComponent<RectTransform>();
@@ -677,6 +682,13 @@ public static class EllenProductionSceneInstaller
         resultSo.FindProperty("memoriesText").objectReferenceValue = memoriesResultObject.GetComponent<TextMeshProUGUI>();
         resultSo.FindProperty("secretsText").objectReferenceValue = secretsResultObject.GetComponent<TextMeshProUGUI>();
         resultSo.ApplyModifiedPropertiesWithoutUndo();
+
+        CreateResultActionButton(resultPanelRect, "ContinueButton",
+            "CONTINUE", new Vector2(-180f, -334f), resultPresenter.ContinueCampaign);
+        CreateResultActionButton(resultPanelRect, "ReplayButton",
+            "REPLAY", new Vector2(0f, -334f), resultPresenter.ReplayLevel);
+        CreateResultActionButton(resultPanelRect, "MenuButton",
+            "MENU", new Vector2(180f, -334f), resultPresenter.ReturnToMenu);
 
         resultPanel.SetActive(false);
     }
@@ -790,6 +802,62 @@ public static class EllenProductionSceneInstaller
         }
 
         StyleButton(wallJump);
+    }
+
+    private static void UpgradeExistingResultNavigation(GameObject hud)
+    {
+        // Old generated scenes may contain ProductionHUD without any way
+        // to leave the result window. Add missing actions without duplicating
+        // or discarding an already serialized HUD.
+        LevelResultPresenter presenter = hud.GetComponentInChildren<LevelResultPresenter>(true);
+        Transform result = FindRecursive(hud.transform, "LevelResultPanel");
+        if (presenter == null || result == null)
+        {
+            Debug.LogWarning("[Ellen HUD] Existing production HUD is missing result components; " +
+                "rebuild the production HUD before shipping.");
+            return;
+        }
+
+        RectTransform panelRect = result as RectTransform;
+        if (panelRect == null) return;
+        panelRect.sizeDelta = new Vector2(560f, 420f);
+        Image panelImage = result.GetComponent<Image>();
+        if (panelImage != null) panelImage.raycastTarget = true;
+
+        if (FindRecursive(result, "ContinueButton") == null)
+            CreateResultActionButton(panelRect, "ContinueButton", "CONTINUE",
+                new Vector2(-180f, -334f), presenter.ContinueCampaign);
+        if (FindRecursive(result, "ReplayButton") == null)
+            CreateResultActionButton(panelRect, "ReplayButton", "REPLAY",
+                new Vector2(0f, -334f), presenter.ReplayLevel);
+        if (FindRecursive(result, "MenuButton") == null)
+            CreateResultActionButton(panelRect, "MenuButton", "MENU",
+                new Vector2(180f, -334f), presenter.ReturnToMenu);
+    }
+
+    private static void CreateResultActionButton(
+        RectTransform parent, string name, string title, Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction action)
+    {
+        GameObject host = CreateImage(name, parent, new Color(0.13f, 0.23f, 0.32f, 0.98f));
+        RectTransform buttonRect = host.GetComponent<RectTransform>();
+        buttonRect.anchorMin = buttonRect.anchorMax = new Vector2(0.5f, 1f);
+        buttonRect.pivot = new Vector2(0.5f, 1f);
+        buttonRect.anchoredPosition = anchoredPosition;
+        buttonRect.sizeDelta = new Vector2(160f, 54f);
+
+        host.GetComponent<Image>().raycastTarget = true;
+        Button button = EnsureComponent<Button>(host);
+        button.onClick = new Button.ButtonClickedEvent();
+        UnityEventTools.AddPersistentListener(button.onClick, action);
+        StyleButton(host);
+
+        GameObject label = CreateText(name + "Label", buttonRect, title, 19f);
+        RectTransform labelRect = label.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
     }
 
     private static void PositionResultRow(RectTransform rect, float y)
