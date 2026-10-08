@@ -103,12 +103,23 @@ public class CanvasControl : MonoBehaviour
          BulletStrawberry.text = characterAttack.CurrentBullet.ToString(); 
          Times.text = CurrentTime.ToString();
          ClockFire.fillAmount = 1;
+         playerHealth.HealthChanged += OnHealthChanged;
+         SyncHealthUI();
 
+    }
+
+    private void OnDestroy()
+    {
+        if (playerHealth != null) playerHealth.HealthChanged -= OnHealthChanged;
+    }
+
+    private void OnHealthChanged(int current, int max)
+    {
+        SyncHealthUI();
     }
 
     private void Update()
     {
-       SyncHealthUI();
        DecreaseBullet(characterAttack.CurrentBullet);
        
        CanvasTimer();
@@ -158,9 +169,7 @@ public class CanvasControl : MonoBehaviour
 
        if (CurrentTime == 0 || CurrentTime < 0)
        {
-           GameObject.FindWithTag("Player").GetComponent<Animator>().SetBool("idle",false);
-           GameObject.FindWithTag("Player").GetComponent<Animator>().SetBool("fall",true);
-           StartCoroutine(WaitAnimation());
+           playerHealth.Kill();
            
 
        }
@@ -237,13 +246,9 @@ public class CanvasControl : MonoBehaviour
     public void DieImmediate()
     {
         
-        if(trapThorns.isTouchingthorn)
+        if (trapThorns.isTouchingthorn)
         {
-            Star1.fillAmount = 0;
-            Star2.fillAmount = 0;
-            Star3.fillAmount = 0;
-
-
+            playerHealth.Kill();
         }
 
 
