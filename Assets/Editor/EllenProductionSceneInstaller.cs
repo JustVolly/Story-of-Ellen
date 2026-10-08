@@ -384,6 +384,7 @@ public static class EllenProductionSceneInstaller
         VerticalSliceDirector director = EnsureComponent<VerticalSliceDirector>(productionRoot);
         GameplayBootstrap bootstrap = EnsureComponent<GameplayBootstrap>(productionRoot);
         HitStop hitStop = EnsureComponent<HitStop>(productionRoot);
+        SpiritWorldPresentation spiritPresentation = EnsureComponent<SpiritWorldPresentation>(productionRoot);
 
         SerializedObject bootstrapSo = new SerializedObject(bootstrap);
         bootstrapSo.FindProperty("gameSession").objectReferenceValue = session;
@@ -392,6 +393,11 @@ public static class EllenProductionSceneInstaller
         bootstrapSo.FindProperty("spiritWorld").objectReferenceValue = spirit;
         bootstrapSo.FindProperty("levelFlow").objectReferenceValue = flow;
         bootstrapSo.ApplyModifiedPropertiesWithoutUndo();
+
+        SerializedObject spiritPresentationSo = new SerializedObject(spiritPresentation);
+        spiritPresentationSo.FindProperty("spiritWorld").objectReferenceValue = spirit;
+        SetObjectArray(spiritPresentationSo.FindProperty("tintedSprites"), CollectBackgroundSprites());
+        spiritPresentationSo.ApplyModifiedPropertiesWithoutUndo();
 
         SerializedObject damageSo = new SerializedObject(damagePresenter);
         damageSo.FindProperty("health").objectReferenceValue = health;
@@ -404,7 +410,7 @@ public static class EllenProductionSceneInstaller
         feedbackSo.ApplyModifiedPropertiesWithoutUndo();
 
         if (canvas != null)
-            EnsureProductionHud(canvas, spirit, flow);
+            EnsureProductionHud(canvas, spirit, flow, abilities);
 
         AddPanelTransition("LostPanel");
         AddPanelTransition("WinPanel");
@@ -416,7 +422,7 @@ public static class EllenProductionSceneInstaller
         EditorUtility.SetDirty(director);
     }
 
-    private static void EnsureProductionHud(Canvas canvas, SpiritWorldController spirit, LevelFlowController flow)
+    private static void EnsureProductionHud(Canvas canvas, SpiritWorldController spirit, LevelFlowController flow, PlayerAbilityController abilities)
     {
         GameObject existing = FindInScene("ProductionHUD");
         if (existing != null) return;
@@ -433,6 +439,13 @@ public static class EllenProductionSceneInstaller
 
         GameObject spiritPanel = CreateImage("SpiritHUD", hudRect, new Color(0.025f, 0.035f, 0.055f, 0.86f));
         RectTransform panelRect = spiritPanel.GetComponent<RectTransform>();
+        Image spiritPanelImage = spiritPanel.GetComponent<Image>();
+        spiritPanelImage.raycastTarget = true;
+        Button spiritToggle = EnsureComponent<Button>(spiritPanel);
+        spiritToggle.onClick = new Button.ButtonClickedEvent();
+        UnityEventTools.AddPersistentListener(spiritToggle.onClick, abilities.TryToggleSpirit);
+        StyleButton(spiritPanel);
+
         panelRect.anchorMin = panelRect.anchorMax = new Vector2(1f, 1f);
         panelRect.pivot = new Vector2(1f, 1f);
         panelRect.anchoredPosition = new Vector2(-28f, -28f);
@@ -625,6 +638,25 @@ public static class EllenProductionSceneInstaller
         }
 
         return null;
+    }
+
+    private static SpriteRenderer[] CollectBackgroundSprites()
+    {
+        List<SpriteRenderer> result = new List<SpriteRenderer>();
+        Scene scene = SceneManager.GetActiveScene();
+
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            SpriteRenderer[] renderers = root.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (SpriteRenderer renderer in renderers)
+            {
+                if (renderer == null) continue;
+                if (renderer.gameObject.name.IndexOf("Background", System.StringComparison.OrdinalIgnoreCase) < 0) continue;
+                result.Add(renderer);
+            }
+        }
+
+        return result.ToArray();
     }
 
     private static RectTransform[] CollectRects(params string[] names)
