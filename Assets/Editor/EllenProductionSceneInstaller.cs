@@ -426,6 +426,9 @@ public static class EllenProductionSceneInstaller
         AddPanelTransition("WinPanel");
         AddPanelTransition("StopPanel");
 
+        if (SceneManager.GetActiveScene().name == "TwoScene")
+            EnsureDashButton(abilities);
+
         EditorUtility.SetDirty(player);
         EditorUtility.SetDirty(productionRoot);
         EditorUtility.SetDirty(respawn);
@@ -580,6 +583,46 @@ public static class EllenProductionSceneInstaller
         abilitySo.FindProperty("title").objectReferenceValue = abilityTitle.GetComponent<TextMeshProUGUI>();
         abilitySo.FindProperty("description").objectReferenceValue = abilityDescription.GetComponent<TextMeshProUGUI>();
         abilitySo.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void EnsureDashButton(PlayerAbilityController abilities)
+    {
+        if (FindInScene("Dash") != null) return;
+
+        GameObject fire = FindInScene("Fire");
+        if (fire == null) return;
+
+        GameObject dash = Object.Instantiate(fire, fire.transform.parent);
+        dash.name = "Dash";
+        Undo.RegisterCreatedObjectUndo(dash, "Create Dash button");
+
+        RectTransform dashRect = dash.GetComponent<RectTransform>();
+        if (dashRect != null)
+            dashRect.anchoredPosition += Vector2.up * 92f;
+
+        Button button = dash.GetComponent<Button>();
+        if (button != null)
+        {
+            button.onClick = new Button.ButtonClickedEvent();
+            UnityEventTools.AddPersistentListener(button.onClick, abilities.TryDash);
+        }
+
+        TextMeshProUGUI label = dash.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (label == null)
+        {
+            GameObject labelObject = CreateText("DashLabel", dash.transform, "DASH", 16f);
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+        }
+        else
+        {
+            label.text = "DASH";
+        }
+
+        StyleButton(dash);
     }
 
     private static void AddPanelTransition(string panelName)
