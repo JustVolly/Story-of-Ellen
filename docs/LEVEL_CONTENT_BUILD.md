@@ -42,6 +42,34 @@ Unity -batchmode -quit -projectPath "$(pwd)" \
 
 Inspect the exit status and the editor log; **do not** treat the headless script itself as a Play Mode test. Review and commit the changed `.unity` scene files after running it.
 
+## Echo puzzles and Spirit Wells (third development pass)
+
+The level designer now creates persistent-in-run **Ability Seals** and reusable
+**Spirit Wells** using the original crypt/altar sprites and particle effects.
+
+- **Spirit Well:** standing within its aura while energy is below maximum restores
+  3 energy units. It then enters an 8-second recharge period. Standing at full
+  energy does not waste an activation. Cooldown is indicated by a dimmed altar.
+- **Spirit Seal:** toggle Spirit World inside the nearby sensor to permanently
+  deactivate that blocker for the current attempt.
+- **Dash Seal:** dash through the nearby sensor to permanently break its blocker.
+  A non-dashing approach does not unlock the seal.
+- **Combat compatibility:** character bullets first look for `EnemyHealth` on
+  the impacted collider's parent hierarchy. This makes damage work on production
+  enemies and Guardian child colliders without removing the old enemy responses.
+
+| Scene | New content | Positions in world X |
+| --- | --- | --- |
+| OneScene | Spirit Well tutorial, Spirit Seal | 70, 92 |
+| TwoScene | Dash Seal before first authored dash barrier | 135 |
+| ThreeScene | Spirit Well, Spirit Seal, Dash Seal, final recharge Well | 280, 300, 435, 554 |
+
+The Unity editor **Build Complete Campaign** command rebuilds authored gameplay
+then updates art and saves the scenes. **Validate Complete Campaign** checks exact
+well/seal counts *and* their serialized collider, visual, Spirit World and
+particle-system references. This is static validation only, not proof that all
+routes are traversable at gameplay speed.
+
 ## Level-by-level direction
 
 | Scene | Identity | Authored mechanics | Visual assets |
@@ -85,6 +113,10 @@ Gameplay recovery and progression changes:
 - [ ] Spirit collision safety: let energy expire while Ellen is *inside* a Spirit gate, then verify the gate solidifies after she clears it rather than trapping or launching her.
 - [ ] Guardian telegraph: wait for red anticipation flash, dodge its committed attack direction, verify phase two/three speed changes and that the boss cannot immediately attack without recovery time.
 - [ ] Level 1: player spawns on ground, camera follows, double jump works, Spirit toggle opens both Spirit gates, at least one memory is accessible, shrine heals and sets checkpoint, objective exit completes level.
+- [ ] Level 1 Spirit puzzle: walk into Spirit Seal normally (it stays closed), toggle Spirit World while inside the sensor, verify it opens permanently; expend Spirit energy then recharge at the Well. A full bar must not spend the Well's cooldown.
+- [ ] Level 2 Dash Seal: walking into the barrier does not open it, dashing through its sensor does, and its visual disappears after activation.
+- [ ] Level 3 chain: both Spirit and Dash Seals operate in order; recharge Well before Spirit gate and second Well before final ascent work even after repeated respawns. Verify no newly generated blockers conflict with terrain or existing routes.
+- [ ] Combat: shoot the Guardian's sprite and child colliders; each real projectile hit reduces its production health, changes phases, and ultimately triggers victory. Verify legacy snail/non-production enemies still respond normally.
 - [ ] Level 2: Dash unlock available, dash gates break only while dashing, memory route is navigable, boss spawns when entering arena, health/UI/phases function, defeating it opens the exit, and reaching the exit (not simply killing the boss) progresses to Level 3.
 - [ ] Level 3: Wall-jump ability available, both wall-jump shafts are reachable from ground, elevated memory pickups are reachable, Spirit gate and dash barrier both work, 2 memories unlock the objective exit, final result triggers.
 - [ ] Check that no art sprite occludes player, interactive sprites remain visible, no collisions were accidentally created by props, no camera clipping at x=-60..890. Check ambience volume follows the SFX setting; shrine respawns must reset dash/fall momentum.
