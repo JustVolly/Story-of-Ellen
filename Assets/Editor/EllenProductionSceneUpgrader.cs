@@ -74,7 +74,7 @@ public static class EllenProductionSceneUpgrader
             errors++;
         }
 
-        errors += ValidateCanvasScaler(canvas, scene.name);
+        errors += ValidateCanvasScaler(canvas, scene.name, new Vector2(800f, 500f));
         return errors;
     }
 
@@ -119,7 +119,7 @@ public static class EllenProductionSceneUpgrader
         }
         else
         {
-            errors += ValidateCanvasScaler(canvas, scene.name);
+            errors += ValidateCanvasScaler(canvas, scene.name, new Vector2(1920f, 1080f));
             Transform hud = canvas.transform.Find("ProductionHUD");
             if (hud == null)
             {
@@ -151,7 +151,7 @@ public static class EllenProductionSceneUpgrader
         return 1;
     }
 
-    private static int ValidateCanvasScaler(Canvas canvas, string sceneName)
+    private static int ValidateCanvasScaler(Canvas canvas, string sceneName, Vector2 expectedReferenceResolution)
     {
         CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
         if (scaler == null)
@@ -161,7 +161,7 @@ public static class EllenProductionSceneUpgrader
         }
 
         if (scaler.uiScaleMode != CanvasScaler.ScaleMode.ScaleWithScreenSize
-            || scaler.referenceResolution != new Vector2(1920f, 1080f)
+            || scaler.referenceResolution != expectedReferenceResolution
             || Mathf.Abs(scaler.matchWidthOrHeight - 0.5f) > 0.001f)
         {
             Debug.LogError("[Ellen Production] " + sceneName + " CanvasScaler is not production configured.");
@@ -181,7 +181,7 @@ public static class EllenProductionSceneUpgrader
             return;
         }
 
-        ConfigureCanvas(canvas);
+        ConfigureCanvas(canvas, new Vector2(800f, 500f));
 
         CanvasGroup group = Ensure<CanvasGroup>(canvas.gameObject);
         group.alpha = 1f;
@@ -278,7 +278,7 @@ public static class EllenProductionSceneUpgrader
         Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
         if (canvas != null)
         {
-            ConfigureCanvas(canvas);
+            ConfigureCanvas(canvas, new Vector2(1920f, 1080f));
             BuildProductionHud(canvas, flow, spirit, abilities, damagePresenter, scene);
         }
 
@@ -491,11 +491,11 @@ public static class EllenProductionSceneUpgrader
         catch { return null; }
     }
 
-    private static void ConfigureCanvas(Canvas canvas)
+    private static void ConfigureCanvas(Canvas canvas, Vector2 referenceResolution)
     {
         CanvasScaler scaler = Ensure<CanvasScaler>(canvas.gameObject);
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.referenceResolution = referenceResolution;
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         scaler.matchWidthOrHeight = 0.5f;
         scaler.referencePixelsPerUnit = 100f;
