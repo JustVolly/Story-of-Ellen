@@ -6,6 +6,8 @@ public class BossArenaController : MonoBehaviour
     [SerializeField] private GameObject entranceBarrier;
     [SerializeField] private GameObject exitBarrier;
     [SerializeField] private GameObject bossHud;
+    [SerializeField] private GameObject bossRoot;
+    [SerializeField] private bool activateBossOnEnter = true;
     [SerializeField] private VerticalSliceDirector director;
 
     private bool started;
@@ -13,6 +15,7 @@ public class BossArenaController : MonoBehaviour
     private void Awake()
     {
         if (bossHud != null) bossHud.SetActive(false);
+        if (activateBossOnEnter && bossRoot != null) bossRoot.SetActive(false);
         if (entranceBarrier != null) entranceBarrier.SetActive(false);
         if (exitBarrier != null) exitBarrier.SetActive(true);
     }
@@ -32,6 +35,7 @@ public class BossArenaController : MonoBehaviour
         if (started || !other.CompareTag("Player")) return;
         started = true;
         if (entranceBarrier != null) entranceBarrier.SetActive(true);
+        if (activateBossOnEnter && bossRoot != null) bossRoot.SetActive(true);
         if (bossHud != null) bossHud.SetActive(true);
         if (director != null) director.SetBeat(VerticalSliceDirector.Beat.Boss);
     }
