@@ -1,5 +1,13 @@
 # Story of Ellen - Play Mode Preflight
 
+## Production scene migration
+- Open the gameplay-foundation branch in Unity and let the import finish.
+- Run Ellen > Production > Upgrade All Scenes.
+- Review the generated StartingScene, OneScene and TwoScene changes before committing scene files.
+- Run Ellen > Production > Validate Migrated Scenes.
+- Run Ellen > Validate Vertical Slice.
+- Start Play Mode from StartingScene and complete both levels end-to-end.
+
 Run this after Unity finishes importing the branch and before tuning gameplay.
 
 ## Import and compile
