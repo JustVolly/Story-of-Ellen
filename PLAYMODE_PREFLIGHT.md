@@ -3,7 +3,7 @@
 ## Production scene migration
 - Open the gameplay-foundation branch in Unity and let the import finish.
 - Run Ellen > Production > Upgrade All Scenes.
-- Review the generated StartingScene, OneScene and TwoScene changes before committing scene files.
+- Review the generated StartingScene, OneScene, TwoScene and ThreeScene changes before committing scene files.
 - Run Ellen > Production > Validate Migrated Scenes.
 - Run Ellen > Validate Vertical Slice.
 - Start Play Mode from StartingScene and complete both levels end-to-end.
@@ -80,3 +80,17 @@ Run this after Unity finishes importing the branch and before tuning gameplay.
 - Guardian takes projectile damage through EnemyHealth, changes phase at roughly 66% and 33% HP, and cannot leave the intended arena.
 - On Guardian death, barriers open, boss HUD hides, result data records once, and the legacy Finish remains reachable.
 - Completing the final Finish records campaign completion and returns to StartingScene.
+
+## Level 3 — Spirit Ascent
+- ThreeScene appears in Build Settings and is reached after completing TwoScene.
+- Wall Jump unlocks on entry; both DASH and WALL JUMP mobile controls are visible and usable.
+- Wall-check detection follows player facing on both left and right walls.
+- First wall-jump shaft can be entered safely from below and the top Memory is reachable without collision exploits.
+- Spirit gate after the first ascent blocks Material World and opens immediately in Spirit World.
+- Dash barrier after the Spirit section requires a real Dash and cannot be bypassed by normal walking.
+- Second shrine becomes the final checkpoint before the last mastery section.
+- Second wall-jump shaft is harder through positioning/pacing, not through a new unexplained rule.
+- Final mastery gate requires 2 of 3 Memories; collecting all 3 remains optional mastery value.
+- Result data records once before the legacy Finish.
+- Completing the legacy Finish records campaign completion and returns to StartingScene.
+- Main menu shows REPLAY LEVEL 3 after the campaign is complete.
