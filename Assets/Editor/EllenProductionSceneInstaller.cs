@@ -458,7 +458,11 @@ public static class EllenProductionSceneInstaller
     private static void EnsureProductionHud(Canvas canvas, SpiritWorldController spirit, LevelFlowController flow, PlayerAbilityController abilities)
     {
         GameObject existing = FindInScene("ProductionHUD");
-        if (existing != null) return;
+        if (existing != null)
+        {
+            UpgradeExistingResultNavigation(existing);
+            return;
+        }
 
         GameObject hud = new GameObject("ProductionHUD", typeof(RectTransform));
         Undo.RegisterCreatedObjectUndo(hud, "Create Production HUD");
@@ -798,6 +802,37 @@ public static class EllenProductionSceneInstaller
         }
 
         StyleButton(wallJump);
+    }
+
+    private static void UpgradeExistingResultNavigation(GameObject hud)
+    {
+        // Old generated scenes may contain ProductionHUD without any way
+        // to leave the result window. Add missing actions without duplicating
+        // or discarding an already serialized HUD.
+        LevelResultPresenter presenter = hud.GetComponentInChildren<LevelResultPresenter>(true);
+        Transform result = FindRecursive(hud.transform, "LevelResultPanel");
+        if (presenter == null || result == null)
+        {
+            Debug.LogWarning("[Ellen HUD] Existing production HUD is missing result components; " +
+                "rebuild the production HUD before shipping.");
+            return;
+        }
+
+        RectTransform panelRect = result as RectTransform;
+        if (panelRect == null) return;
+        panelRect.sizeDelta = new Vector2(560f, 420f);
+        Image panelImage = result.GetComponent<Image>();
+        if (panelImage != null) panelImage.raycastTarget = true;
+
+        if (FindRecursive(result, "ContinueButton") == null)
+            CreateResultActionButton(panelRect, "ContinueButton", "CONTINUE",
+                new Vector2(-180f, -334f), presenter.ContinueCampaign);
+        if (FindRecursive(result, "ReplayButton") == null)
+            CreateResultActionButton(panelRect, "ReplayButton", "REPLAY",
+                new Vector2(0f, -334f), presenter.ReplayLevel);
+        if (FindRecursive(result, "MenuButton") == null)
+            CreateResultActionButton(panelRect, "MenuButton", "MENU",
+                new Vector2(180f, -334f), presenter.ReturnToMenu);
     }
 
     private static void CreateResultActionButton(
