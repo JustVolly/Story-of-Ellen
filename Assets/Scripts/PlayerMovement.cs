@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -16,6 +17,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Min(0.1f)] private float groundDeceleration = 70f;
     [SerializeField, Min(0.1f)] private float airAcceleration = 35f;
     [SerializeField, Min(0.1f)] private float airDeceleration = 22f;
+    [SerializeField, Range(1f, 2.5f)] private float turnAccelerationMultiplier = 1.35f;
+    [SerializeField, Range(0f, 2f)] private float apexHorizontalBonus = 0.45f;
     [SerializeField, Range(1f, 2f)] private float boosterSpeedMultiplier = 1.3f;
 
     [Header("Jump Feel")]
@@ -25,8 +28,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Range(0.1f, 0.9f)] private float jumpCutMultiplier = 0.5f;
     [SerializeField, Min(1f)] private float fallGravityMultiplier = 1.7f;
     [SerializeField, Min(1f)] private float lowJumpGravityMultiplier = 1.25f;
+    [SerializeField, Range(0.1f, 1f)] private float apexGravityMultiplier = 0.55f;
+    [SerializeField, Min(0.05f)] private float apexVelocityThreshold = 1.1f;
     [SerializeField, Min(1f)] private float maxFallSpeed = 22f;
     [SerializeField, Min(1)] private int maxJumps = 2;
+    [SerializeField, Range(0.02f, 0.5f)] private float preLandingBufferProbe = 0.22f;
 
     public int TouchCountCheck;
     public int RemainingJumping;
@@ -46,6 +52,9 @@ public class PlayerMovement : MonoBehaviour
     public bool isPressD_Ground;
     public bool isPressA_Ground;
 
+    public event Action<bool> Jumped;
+    public event Action<float> Landed;
+
     private ScenesManager scenesManager;
     private PlayerHealth playerHealth;
     private TrapThorns trapThorns;
@@ -54,10 +63,12 @@ public class PlayerMovement : MonoBehaviour
     private PowerUps powerUps;
     private TrapofEnemy trapofEnemy;
     private PlayerAdvancedMovement advancedMovement;
+    private Collider2D movementCollider;
 
     private float coyoteCounter;
     private float jumpBufferCounter;
     private float baseGravityScale;
+    private float previousVerticalVelocity;
     private int jumpsUsed;
     private int groundContacts;
     private bool jumpHeld;
@@ -67,6 +78,10 @@ public class PlayerMovement : MonoBehaviour
         myRigidbody = GetComponent<Rigidbody2D>();
         CharacterAnimator = GetComponent<Animator>();
         mytransform = transform;
+        movementCollider = GetComponent<CapsuleCollider2D>();
+        if (movementCollider == null) movementCollider = GetComponent<BoxCollider2D>();
+        if (movementCollider == null) movementCollider = GetComponent<Collider2D>();
+
         if (Player == null) Player = gameObject;
         if (PlayerTransform == null) PlayerTransform = transform;
 
@@ -121,7 +136,16 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         if (playerHealth == null || myRigidbody == null) return;
-        if (!playerHealth.isAlive || (advancedMovement != null && advancedMovement.OverridesLegacyMovement)) return;
+
+        previousVerticalVelocity = myRigidbody.linearVelocity.y;
+
+        if (!playerHealth.isAlive ||
+            (trapThorns != null && trapThorns.isTouchingthorn) ||
+            (levelUp != null && levelUp.isFinish) ||
+            (advancedMovement != null && advancedMovement.OverridesLegacyMovement))
+        {
+            return;
+        }
 
         ApplyHorizontalMovement();
         ApplyGravityFeel();
@@ -129,19 +153,24 @@ public class PlayerMovement : MonoBehaviour
 
     private void ApplyHorizontalMovement()
     {
-        float input = 0f;
-        if (isPress_D && !isPress_A) input = 1f;
-        else if (isPress_A && !isPress_D) input = -1f;
-
+        float input = HorizontalInput();
         float speedMultiplier = boosterPowerUp != null && boosterPowerUp.isBooster ? boosterSpeedMultiplier : 1f;
-        float targetSpeed = input * maxRunSpeed * speedMultiplier;
+        float apexBonus = !isGround && IsNearApex() ? apexHorizontalBonus : 0f;
+        float targetSpeed = input * (maxRunSpeed + apexBonus) * speedMultiplier;
 
-        bool accelerating = Mathf.Abs(targetSpeed) > 0.01f;
-        float acceleration = isGround
-            ? (accelerating ? groundAcceleration : groundDeceleration)
-            : (accelerating ? airAcceleration : airDeceleration);
+        float currentX = myRigidbody.linearVelocity.x;
+        bool hasInput = Mathf.Abs(input) > 0.01f;
+        bool turning = hasInput && Mathf.Abs(currentX) > 0.1f && Mathf.Sign(input) != Mathf.Sign(currentX);
 
-        float nextX = Mathf.MoveTowards(myRigidbody.linearVelocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+        float acceleration;
+        if (isGround)
+            acceleration = hasInput ? groundAcceleration : groundDeceleration;
+        else
+            acceleration = hasInput ? airAcceleration : airDeceleration;
+
+        if (turning) acceleration *= turnAccelerationMultiplier;
+
+        float nextX = Mathf.MoveTowards(currentX, targetSpeed, acceleration * Time.fixedDeltaTime);
         myRigidbody.linearVelocity = new Vector2(nextX, myRigidbody.linearVelocity.y);
 
         isRunning = Mathf.Abs(nextX) > 0.1f;
@@ -149,24 +178,45 @@ public class PlayerMovement : MonoBehaviour
         else if (input < 0f) FlipLeft();
     }
 
+    private float HorizontalInput()
+    {
+        if (isPress_D && !isPress_A) return 1f;
+        if (isPress_A && !isPress_D) return -1f;
+        return 0f;
+    }
+
     private void ApplyGravityFeel()
     {
+        float verticalVelocity = myRigidbody.linearVelocity.y;
         float gravity = baseGravityScale;
 
-        if (myRigidbody.linearVelocity.y < -0.01f)
+        if (!isGround && Mathf.Abs(verticalVelocity) <= apexVelocityThreshold && jumpHeld)
+            gravity *= apexGravityMultiplier;
+        else if (verticalVelocity < -0.01f)
             gravity *= fallGravityMultiplier;
-        else if (myRigidbody.linearVelocity.y > 0.01f && !jumpHeld)
+        else if (verticalVelocity > 0.01f && !jumpHeld)
             gravity *= lowJumpGravityMultiplier;
 
         myRigidbody.gravityScale = gravity;
 
-        if (myRigidbody.linearVelocity.y < -maxFallSpeed)
+        if (verticalVelocity < -maxFallSpeed)
             myRigidbody.linearVelocity = new Vector2(myRigidbody.linearVelocity.x, -maxFallSpeed);
+    }
+
+    private bool IsNearApex()
+    {
+        return Mathf.Abs(myRigidbody.linearVelocity.y) <= apexVelocityThreshold;
     }
 
     public void Jump()
     {
-        if (playerHealth == null || !playerHealth.isAlive || (levelUp != null && levelUp.isFinish)) return;
+        if (playerHealth == null ||
+            !playerHealth.isAlive ||
+            (levelUp != null && levelUp.isFinish) ||
+            (advancedMovement != null && advancedMovement.OverridesLegacyMovement))
+        {
+            return;
+        }
 
         jumpHeld = true;
         isPress_Up = true;
@@ -180,20 +230,51 @@ public class PlayerMovement : MonoBehaviour
         if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
 
         bool groundedJump = isGround || (coyoteCounter > 0f && jumpsUsed == 0);
-        bool airJump = !groundedJump && jumpsUsed < maxJumps;
+        if (groundedJump)
+        {
+            ExecuteJump(true);
+            return;
+        }
 
-        if (!groundedJump && !airJump) return;
+        if (jumpsUsed >= maxJumps) return;
 
-        ExecuteJump(groundedJump);
+        // If Ellen is already descending and ground is immediately below, preserve the
+        // buffered input for the landing instead of accidentally spending the air jump.
+        if (myRigidbody.linearVelocity.y < 0f && IsGroundImmediatelyBelow())
+            return;
+
+        ExecuteJump(false);
+    }
+
+    private bool IsGroundImmediatelyBelow()
+    {
+        if (movementCollider == null || preLandingBufferProbe <= 0f) return false;
+
+        Bounds bounds = movementCollider.bounds;
+        Vector2 size = new Vector2(bounds.size.x * 0.85f, Mathf.Max(0.02f, bounds.size.y * 0.2f));
+        Vector2 origin = new Vector2(bounds.center.x, bounds.min.y + size.y * 0.5f);
+
+        RaycastHit2D[] hits = Physics2D.BoxCastAll(
+            origin,
+            size,
+            0f,
+            Vector2.down,
+            preLandingBufferProbe);
+
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider == null || hit.collider.transform.IsChildOf(transform)) continue;
+            if (hit.collider.CompareTag("Grounds")) return true;
+        }
+
+        return false;
     }
 
     private void ExecuteJump(bool groundedJump)
     {
-        if (groundedJump)
-            jumpsUsed = 1;
-        else
-            jumpsUsed++;
+        bool airJump = !groundedJump;
 
+        jumpsUsed = groundedJump ? 1 : jumpsUsed + 1;
         RemainingJumping = Mathf.Max(0, maxJumps - jumpsUsed);
         jumpBufferCounter = 0f;
         coyoteCounter = 0f;
@@ -207,6 +288,8 @@ public class PlayerMovement : MonoBehaviour
             CharacterAnimator.SetBool("run", false);
             CharacterAnimator.SetBool("jump", true);
         }
+
+        Jumped?.Invoke(airJump);
     }
 
     public void OnPress_W()
@@ -223,6 +306,8 @@ public class PlayerMovement : MonoBehaviour
     {
         isPress_Up = false;
         jumpHeld = false;
+
+        if (advancedMovement != null && advancedMovement.OverridesLegacyMovement) return;
 
         if (myRigidbody != null && myRigidbody.linearVelocity.y > 0f)
         {
@@ -262,15 +347,9 @@ public class PlayerMovement : MonoBehaviour
         isRunning = false;
     }
 
-    public void FlipRight()
-    {
-        SetFacing(true);
-    }
+    public void FlipRight() => SetFacing(true);
 
-    public void FlipLeft()
-    {
-        SetFacing(false);
-    }
+    public void FlipLeft() => SetFacing(false);
 
     private void SetFacing(bool right)
     {
@@ -345,10 +424,15 @@ public class PlayerMovement : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Grounds")) return;
+
+        bool wasGrounded = isGround;
         groundContacts++;
         isGround = true;
         jumpsUsed = 0;
         RemainingJumping = maxJumps;
+
+        if (!wasGrounded)
+            Landed?.Invoke(Mathf.Max(0f, -previousVerticalVelocity));
     }
 
     private void OnCollisionExit2D(Collision2D collision)
