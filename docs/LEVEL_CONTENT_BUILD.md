@@ -104,6 +104,40 @@ Gameplay recovery and progression changes:
 - Starting a New Journey clears prior results, rankings and unlocked abilities while preserving audio settings.
 - Completing Level 3 marks the full campaign finished in the save data.
 
+## Campaign reliability and boss retry (fourth development pass)
+
+**End-of-level navigation:** Completing the authored objective exit now opens a
+result window with **CONTINUE**, **REPLAY** and **MENU** buttons. Gameplay time
+stops when the win event fires, but the results reveal using real-time timing
+so the UI works while the game is paused. Continue loads OneScene → TwoScene →
+ThreeScene → StartingScene; replay reloads the current level. Each action
+restores `Time.timeScale = 1` before scene loading. If the target scene is
+missing from Build Settings, an error is logged rather than hiding the window.
+
+**Upgrading previously baked HUD:** The scene installer adds missing result
+buttons to an existing `ProductionHUD` without creating a duplicate.
+The campaign validator checks each persistent Unity button callback is wired
+to the right `LevelResultPresenter` method and confirms the result recorder
+and arena references are set.
+
+**Guardian checkpoint safety:** When Ellen dies in the active Guardian arena
+*before* the Guardian is defeated, the entrance opens, boss attacks stop,
+physics momentum is cleared, its spawn pose is restored, health is refilled,
+and phase-two/three modifiers are disabled. When Ellen re-enters, combat
+restarts. After defeating the Guardian, a subsequent death must **not** relock
+the exit. The defeated Guardian is never resurrected.
+
+**Exit completion safety:** `LevelCompletionTrigger` now evaluates both
+trigger-enter and trigger-stay, so picking up the last required memory while
+inside the finish zone no longer requires stepping out and back in.
+
+**Legacy Unity error fixes:** `BoosterElectrics` and `PowerUps` now guard
+missing scene settings, dependencies, sprites and VFX instead of throwing
+repeated `NullReferenceException` errors. They also stop multiplying
+`Time.deltaTime` by `Time.timeScale` a second time. The effect setting
+asset remains shared with legacy scripts and should be tested for residual
+cross-scene countdown behavior.
+
 ## Manual Play Mode acceptance test
 
 - [ ] Clean import: Console contains no compiler errors and all Git LFS assets render.
@@ -118,6 +152,10 @@ Gameplay recovery and progression changes:
 - [ ] Level 3 chain: both Spirit and Dash Seals operate in order; recharge Well before Spirit gate and second Well before final ascent work even after repeated respawns. Verify no newly generated blockers conflict with terrain or existing routes.
 - [ ] Combat: shoot the Guardian's sprite and child colliders; each real projectile hit reduces its production health, changes phases, and ultimately triggers victory. Verify legacy snail/non-production enemies still respond normally.
 - [ ] Level 2: Dash unlock available, dash gates break only while dashing, memory route is navigable, boss spawns when entering arena, health/UI/phases function, defeating it opens the exit, and reaching the exit (not simply killing the boss) progresses to Level 3.
+- [ ] Guardian retry: enter arena, damage boss to phase 2, then deliberately die. After respawning, verify entrance is open, Guardian is back at its spawn with full health/phase 1, and re-entry restarts combat. Defeat Guardian, then die before exit if possible; exit must stay open.
+- [ ] Victory actions: finish each authored level, confirm the result UI freezes gameplay and shows Continue, Replay, Menu, and that all 3 actions load the expected scenes at timeScale=1. Test after running the baker twice on the same scenes.
+- [ ] Objective exit: while inside the finish sensor, satisfy the last required objective and ensure completion fires without leaving/re-entering. Check result data saves before continuing.
+- [ ] Legacy power-ups: in each scene, activate booster and defence; verify no NullReferenceExceptions when optional effect references are missing, and countdown runs at the right rate even at timeScale=0.5.
 - [ ] Level 3: Wall-jump ability available, both wall-jump shafts are reachable from ground, elevated memory pickups are reachable, Spirit gate and dash barrier both work, 2 memories unlock the objective exit, final result triggers.
 - [ ] Check that no art sprite occludes player, interactive sprites remain visible, no collisions were accidentally created by props, no camera clipping at x=-60..890. Check ambience volume follows the SFX setting; shrine respawns must reset dash/fall momentum.
 - [ ] Test 16:9, 16:10 and narrow mobile resolutions; inspect console and FPS/memory on target hardware.
