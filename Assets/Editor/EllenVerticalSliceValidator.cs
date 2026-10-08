@@ -28,18 +28,34 @@ public static class EllenVerticalSliceValidator
         if (shrines < 1) Debug.LogWarning("[Ellen Vertical Slice] Add at least one SpiritShrine.");
         if (enemies < 1) Debug.LogWarning("[Ellen Vertical Slice] Add at least one production EnemyHealth encounter.");
 
-        ValidateMetaFiles("Assets/Scripts/Production");
+        errors += ValidateMetaFiles("Assets/Scripts/Production");
+        errors += ValidateBuildScene("OneScene");
     }
 
-    private static void ValidateMetaFiles(string root)
+    private static int ValidateMetaFiles(string root)
     {
-        if (!Directory.Exists(root)) return;
+        if (!Directory.Exists(root)) return 0;
+        int missing = 0;
         foreach (string file in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
         {
             if (file.EndsWith(".meta")) continue;
-            if (!File.Exists(file + ".meta"))
-                Debug.LogError("[Ellen Vertical Slice] Missing Unity meta file: " + file + ".meta");
+            if (File.Exists(file + ".meta")) continue;
+            missing++;
+            Debug.LogError("[Ellen Vertical Slice] Missing Unity meta file: " + file + ".meta");
         }
+        return missing;
+    }
+
+    private static int ValidateBuildScene(string sceneName)
+    {
+        foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+        {
+            if (!scene.enabled) continue;
+            if (Path.GetFileNameWithoutExtension(scene.path) == sceneName) return 0;
+        }
+
+        Debug.LogError("[Ellen Vertical Slice] Required scene is not enabled in Build Settings: " + sceneName);
+        return 1;
     }
 
     private static int Require<T>() where T : Object
