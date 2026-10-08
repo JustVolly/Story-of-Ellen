@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField, Range(1f, 2f)] private float boosterSpeedMultiplier = 1.3f;
 
     [Header("Jump Feel")]
-    [SerializeField, Min(0.1f)] private float jumpVelocity = 15.5f;
+    [SerializeField, Min(0.1f)] private float jumpVelocity = 18f;
     [SerializeField, Range(0f, 0.3f)] private float coyoteTime = 0.12f;
     [SerializeField, Range(0f, 0.3f)] private float jumpBufferTime = 0.12f;
     [SerializeField, Range(0.1f, 0.9f)] private float jumpCutMultiplier = 0.5f;
