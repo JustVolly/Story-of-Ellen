@@ -18,6 +18,8 @@ public static class EllenProductionSceneUpgrader
     [MenuItem("Ellen/Production/Upgrade All Scenes")]
     public static void UpgradeAllScenes()
     {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
         string previousScene = SceneManager.GetActiveScene().path;
 
         UpgradeMainMenu(StartingScenePath);
@@ -31,6 +33,142 @@ public static class EllenProductionSceneUpgrader
             EditorSceneManager.OpenScene(previousScene, OpenSceneMode.Single);
 
         Debug.Log("[Ellen Production] StartingScene, OneScene and TwoScene upgraded. Review changes and run Play Mode preflight before committing scene files.");
+    }
+
+    [MenuItem("Ellen/Production/Validate Migrated Scenes")]
+    public static void ValidateMigratedScenes()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
+        string previousScene = SceneManager.GetActiveScene().path;
+        int errors = 0;
+
+        errors += ValidateMenuScene(StartingScenePath);
+        errors += ValidateGameplayScene(OneScenePath);
+        errors += ValidateGameplayScene(TwoScenePath);
+
+        if (!string.IsNullOrEmpty(previousScene))
+            EditorSceneManager.OpenScene(previousScene, OpenSceneMode.Single);
+
+        if (errors == 0)
+            Debug.Log("[Ellen Production] Scene migration validation passed.");
+        else
+            Debug.LogError("[Ellen Production] Scene migration validation found " + errors + " issue(s).");
+    }
+
+    private static int ValidateMenuScene(string path)
+    {
+        Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+        int errors = 0;
+
+        Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing Canvas.");
+            return 1;
+        }
+
+        if (canvas.GetComponent<MainMenuPresentation>() == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing MainMenuPresentation.");
+            errors++;
+        }
+
+        errors += ValidateCanvasScaler(canvas, scene.name);
+        return errors;
+    }
+
+    private static int ValidateGameplayScene(string path)
+    {
+        Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+        int errors = 0;
+        GameObject player = FindPlayer();
+
+        if (player == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing Player.");
+            return 1;
+        }
+
+        errors += RequireComponent<PlayerMovement>(player, scene.name);
+        errors += RequireComponent<PlayerHealth>(player, scene.name);
+        errors += RequireComponent<PlayerAdvancedMovement>(player, scene.name);
+        errors += RequireComponent<PlayerAbilityController>(player, scene.name);
+        errors += RequireComponent<PlayerRespawnController>(player, scene.name);
+        errors += RequireComponent<PlayerDamagePresenter>(player, scene.name);
+
+        GameObject root = GameObject.Find("[Production]");
+        if (root == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing [Production] root.");
+            errors++;
+        }
+        else
+        {
+            errors += RequireComponent<GameSession>(root, scene.name);
+            errors += RequireComponent<SpiritWorldController>(root, scene.name);
+            errors += RequireComponent<LevelFlowController>(root, scene.name);
+            errors += RequireComponent<GameplayBootstrap>(root, scene.name);
+        }
+
+        Canvas canvas = UnityEngine.Object.FindFirstObjectByType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("[Ellen Production] " + scene.name + " missing Canvas.");
+            errors++;
+        }
+        else
+        {
+            errors += ValidateCanvasScaler(canvas, scene.name);
+            Transform hud = canvas.transform.Find("ProductionHUD");
+            if (hud == null)
+            {
+                Debug.LogError("[Ellen Production] " + scene.name + " missing ProductionHUD.");
+                errors++;
+            }
+            else
+            {
+                if (hud.GetComponent<SafeAreaFitter>() == null)
+                {
+                    Debug.LogError("[Ellen Production] " + scene.name + " ProductionHUD missing SafeAreaFitter.");
+                    errors++;
+                }
+                if (hud.Find("SpiritButton") == null)
+                {
+                    Debug.LogError("[Ellen Production] " + scene.name + " missing SpiritButton.");
+                    errors++;
+                }
+            }
+        }
+
+        return errors;
+    }
+
+    private static int RequireComponent<T>(GameObject target, string sceneName) where T : Component
+    {
+        if (target.GetComponent<T>() != null) return 0;
+        Debug.LogError("[Ellen Production] " + sceneName + " missing " + typeof(T).Name + " on " + target.name + ".");
+        return 1;
+    }
+
+    private static int ValidateCanvasScaler(Canvas canvas, string sceneName)
+    {
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+        {
+            Debug.LogError("[Ellen Production] " + sceneName + " missing CanvasScaler.");
+            return 1;
+        }
+
+        if (scaler.uiScaleMode != CanvasScaler.ScaleMode.ScaleWithScreenSize
+            || scaler.referenceResolution != new Vector2(1920f, 1080f)
+            || Mathf.Abs(scaler.matchWidthOrHeight - 0.5f) > 0.001f)
+        {
+            Debug.LogError("[Ellen Production] " + sceneName + " CanvasScaler is not production configured.");
+            return 1;
+        }
+
+        return 0;
     }
 
     private static void UpgradeMainMenu(string path)
