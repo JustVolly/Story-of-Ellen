@@ -381,6 +381,7 @@ public static class EllenProductionSceneInstaller
         GameSession session = EnsureComponent<GameSession>(productionRoot);
         SpiritWorldController spirit = EnsureComponent<SpiritWorldController>(productionRoot);
         LevelFlowController flow = EnsureComponent<LevelFlowController>(productionRoot);
+        LevelResultRecorder resultRecorder = EnsureComponent<LevelResultRecorder>(productionRoot);
         VerticalSliceDirector director = EnsureComponent<VerticalSliceDirector>(productionRoot);
         GameplayBootstrap bootstrap = EnsureComponent<GameplayBootstrap>(productionRoot);
         HitStop hitStop = EnsureComponent<HitStop>(productionRoot);
@@ -397,6 +398,10 @@ public static class EllenProductionSceneInstaller
             : (int)PlayerAbilityController.Ability.None;
         levelEntrySo.FindProperty("abilities").objectReferenceValue = abilities;
         levelEntrySo.ApplyModifiedPropertiesWithoutUndo();
+
+        SerializedObject recorderSo = new SerializedObject(resultRecorder);
+        recorderSo.FindProperty("flow").objectReferenceValue = flow;
+        recorderSo.ApplyModifiedPropertiesWithoutUndo();
 
         SerializedObject bootstrapSo = new SerializedObject(bootstrap);
         bootstrapSo.FindProperty("gameSession").objectReferenceValue = session;
@@ -618,6 +623,51 @@ public static class EllenProductionSceneInstaller
         tutorialSo.FindProperty("panel").objectReferenceValue = tutorialGroup;
         tutorialSo.FindProperty("message").objectReferenceValue = tutorialMessage.GetComponent<TextMeshProUGUI>();
         tutorialSo.ApplyModifiedPropertiesWithoutUndo();
+
+        GameObject resultHost = new GameObject("ResultHUD", typeof(RectTransform));
+        resultHost.transform.SetParent(hudRect, false);
+        RectTransform resultHostRect = resultHost.GetComponent<RectTransform>();
+        resultHostRect.anchorMin = Vector2.zero;
+        resultHostRect.anchorMax = Vector2.one;
+        resultHostRect.offsetMin = Vector2.zero;
+        resultHostRect.offsetMax = Vector2.zero;
+
+        GameObject resultPanel = CreateImage("LevelResultPanel", resultHostRect, new Color(0.02f, 0.025f, 0.04f, 0.94f));
+        RectTransform resultPanelRect = resultPanel.GetComponent<RectTransform>();
+        resultPanelRect.anchorMin = resultPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        resultPanelRect.pivot = new Vector2(0.5f, 0.5f);
+        resultPanelRect.anchoredPosition = Vector2.zero;
+        resultPanelRect.sizeDelta = new Vector2(520f, 310f);
+        resultPanel.GetComponent<Image>().raycastTarget = false;
+
+        GameObject rankObject = CreateText("ResultRank", resultPanelRect, "A", 58f);
+        RectTransform rankRect = rankObject.GetComponent<RectTransform>();
+        rankRect.anchorMin = rankRect.anchorMax = new Vector2(0.5f, 1f);
+        rankRect.anchoredPosition = new Vector2(0f, -54f);
+        rankRect.sizeDelta = new Vector2(180f, 70f);
+
+        GameObject timeObject = CreateText("ResultTime", resultPanelRect, "Time  0.0s", 20f);
+        GameObject deathsObject = CreateText("ResultDeaths", resultPanelRect, "Deaths  0", 20f);
+        GameObject memoriesResultObject = CreateText("ResultMemories", resultPanelRect, "Memories  0/3", 20f);
+        GameObject secretsResultObject = CreateText("ResultSecrets", resultPanelRect, "Secrets  0", 20f);
+
+        PositionResultRow(timeObject.GetComponent<RectTransform>(), -130f);
+        PositionResultRow(deathsObject.GetComponent<RectTransform>(), -168f);
+        PositionResultRow(memoriesResultObject.GetComponent<RectTransform>(), -206f);
+        PositionResultRow(secretsResultObject.GetComponent<RectTransform>(), -244f);
+
+        LevelResultPresenter resultPresenter = EnsureComponent<LevelResultPresenter>(resultHost);
+        SerializedObject resultSo = new SerializedObject(resultPresenter);
+        resultSo.FindProperty("flow").objectReferenceValue = flow;
+        resultSo.FindProperty("panel").objectReferenceValue = resultPanel;
+        resultSo.FindProperty("rankText").objectReferenceValue = rankObject.GetComponent<TextMeshProUGUI>();
+        resultSo.FindProperty("timeText").objectReferenceValue = timeObject.GetComponent<TextMeshProUGUI>();
+        resultSo.FindProperty("deathsText").objectReferenceValue = deathsObject.GetComponent<TextMeshProUGUI>();
+        resultSo.FindProperty("memoriesText").objectReferenceValue = memoriesResultObject.GetComponent<TextMeshProUGUI>();
+        resultSo.FindProperty("secretsText").objectReferenceValue = secretsResultObject.GetComponent<TextMeshProUGUI>();
+        resultSo.ApplyModifiedPropertiesWithoutUndo();
+
+        resultPanel.SetActive(false);
     }
 
     private static void EnsureAudioManager()
@@ -689,6 +739,14 @@ public static class EllenProductionSceneInstaller
         }
 
         StyleButton(dash);
+    }
+
+    private static void PositionResultRow(RectTransform rect, float y)
+    {
+        if (rect == null) return;
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.anchoredPosition = new Vector2(0f, y);
+        rect.sizeDelta = new Vector2(440f, 30f);
     }
 
     private static void AddPanelTransition(string panelName)
