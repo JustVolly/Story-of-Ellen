@@ -1,100 +1,90 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class LevelUp : MonoBehaviour
 {
-   ScenesManager scenesManager;
-   PlayerMovement playerMovement;
+    [SerializeField] private ParticleSystem[] FireWorks;
+    [SerializeField] private GameObject SetWinPanel;
+    [SerializeField] private Rigidbody2D PlayerRigid;
+    [SerializeField] private Animator PlayerAnim;
+    [SerializeField, Min(0f)] private float finishHopVelocity = 8.5f;
+    [SerializeField, Min(0f)] private float resultDelay = 1.25f;
 
-   [SerializeField] ParticleSystem[] FireWorks;
-   //[SerializeField] Image[] WinStars;
-   [SerializeField] GameObject SetWinPanel;
-   public float Forcing = 1400f;
-   [SerializeField] Rigidbody2D PlayerRigid;
-   [SerializeField] Animator PlayerAnim;
-   
+    public float Forcing = 1400f;
+    public bool isSetWin;
+    public bool isFinish;
 
+    private PlayerMovement playerMovement;
+    private LevelFlowController levelFlow;
+    private bool completionStarted;
 
-   public bool isSetWin;
-   public bool isFinish;
-
-   private void Start() 
-   {
-        scenesManager = FindObjectOfType<ScenesManager>();  
-        playerMovement = FindObjectOfType<PlayerMovement>();  
-        SetWinPanel.SetActive(false);
-       
-
-   }
-
-   void Update() 
-   {
-
-    if (isSetWin)
+    private void Awake()
     {
-        PlayerAnim.Play("Jump_Mask",0,0f);
-        if (playerMovement.isGround)
-        {
-            PlayerRigid.linearVelocity = new Vector2(playerMovement.myRigidbody.linearVelocity.x, Vector2.up.y * Forcing * Time.deltaTime);
-            PlayerAnim.Play("İdle_Mask",0,0f);
-            Debug.Log("Çalişiyor");
-        }
+        playerMovement = FindObjectOfType<PlayerMovement>();
+        levelFlow = FindObjectOfType<LevelFlowController>();
 
-       
-        
+        if (PlayerRigid == null && playerMovement != null)
+            PlayerRigid = playerMovement.GetComponent<Rigidbody2D>();
+
+        if (PlayerAnim == null && playerMovement != null)
+            PlayerAnim = playerMovement.GetComponent<Animator>();
     }
-    
-   }
 
+    private void Start()
+    {
+        if (SetWinPanel != null) SetWinPanel.SetActive(false);
+    }
 
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (completionStarted || !other.CompareTag("Player")) return;
 
-   void OnTriggerEnter2D(Collider2D other) 
-   {
-        if(other.gameObject.tag == "Player")
+        completionStarted = true;
+        isSetWin = true;
+        isFinish = true;
+
+        if (PlayerRigid != null)
+            PlayerRigid.linearVelocity = new Vector2(PlayerRigid.linearVelocity.x, finishHopVelocity);
+
+        if (PlayerAnim != null)
         {
-            isSetWin = true;
-            Debug.Log("Ağaca dokundu");
-            isFinish = true;
-
-            FireWorks[0].Play();
-            FireWorks[1].Play();
-
-
-            StartCoroutine(Win());
-           
-            
-
+            PlayerAnim.SetBool("run", false);
+            PlayerAnim.SetBool("idle", false);
+            PlayerAnim.SetBool("jump", true);
         }
 
-        else
+        PlayFireworks();
+        levelFlow?.TryComplete();
+        StartCoroutine(ShowResults());
+    }
+
+    private IEnumerator ShowResults()
+    {
+        yield return new WaitForSecondsRealtime(resultDelay);
+
+        if (SetWinPanel != null) SetWinPanel.SetActive(true);
+        StopFireworks();
+
+        if (PlayerAnim != null)
         {
-            Debug.Log("Ağaca dokunmuyor");
-            isSetWin = false;
+            PlayerAnim.SetBool("jump", false);
+            PlayerAnim.SetBool("idle", true);
         }
 
-     
-   }
+        isSetWin = false;
+    }
 
-   void OnTriggerStay2D(Collider2D other) 
-   {
-          if(other.gameObject.tag == "Player")
-          {
-              isSetWin = true;
+    private void PlayFireworks()
+    {
+        if (FireWorks == null) return;
+        foreach (ParticleSystem firework in FireWorks)
+            if (firework != null) firework.Play();
+    }
 
-          }
-   }
-
-   IEnumerator Win()
-        {
-            yield return new WaitForSeconds(6f);
-            
-            SetWinPanel.SetActive(true);
-            FireWorks[0].Stop();
-            FireWorks[1].Stop();
-            isSetWin = false;
-            
-            
-        }
+    private void StopFireworks()
+    {
+        if (FireWorks == null) return;
+        foreach (ParticleSystem firework in FireWorks)
+            if (firework != null) firework.Stop();
+    }
 }
