@@ -1,0 +1,28 @@
+name: Ellen production content preflight
+
+on:
+  pull_request:
+    paths:
+      - 'Assets/**'
+      - 'ProjectSettings/EditorBuildSettings.asset'
+      - 'tools/verify_content_paths.py'
+      - '.github/workflows/ellen-content-preflight.yml'
+  push:
+    branches:
+      - 'feature/production-level-content-2026-10'
+    paths:
+      - 'Assets/**'
+      - 'ProjectSettings/EditorBuildSettings.asset'
+      - 'tools/verify_content_paths.py'
+      - '.github/workflows/ellen-content-preflight.yml'
+
+jobs:
+  asset-preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project (LFS pointers are enough for path checks)
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Verify level assets and Build Settings
+        run: python3 tools/verify_content_paths.py
