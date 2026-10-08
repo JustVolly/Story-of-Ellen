@@ -24,4 +24,22 @@ The gameplay foundation adds production movement, UI, progression, Spirit World,
 
 See **[production level build guide](docs/LEVEL_CONTENT_BUILD.md)** for detailed CLI instructions and acceptance tests.
 
+### Playing on desktop and gamepad
+
+| Action | Keyboard | Controller |
+| --- | --- | --- |
+| Move | A/D or arrow keys | Left stick / D-pad |
+| Jump | Space, W, Up | South (A/Cross) |
+| Dash | Shift | East (B/Circle) |
+| Wall-jump | E | North (Y/Triangle) |
+| Spirit World | Q | West (X/Square) |
+| Shoot | F, J, left click | Right shoulder |
+| Pause | Escape | Start |
+
+The full scene bake now installs both desktop/gamepad input and out-of-bounds fall
+recovery; mobile touch handlers remain intact. Guardian attacks have telegraphed
+windups and recoveries, and save data correctly handles a new journey and Level 3
+campaign completion.
+
+
 > Editor content generation is implemented, but this branch does not claim a completed Unity Play Mode or shipping build verification. The generated scenes must be baked and tested in Unity before merging into a release branch.
