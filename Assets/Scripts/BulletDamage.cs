@@ -105,11 +105,12 @@ public class BulletDamage : MonoBehaviour
         
         if (collision.CompareTag("Player") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
              {
-              StartCoroutine(BlinkEffect());
-              istakingDamagePlant = true;
-              playerHealth.DecreaseHealth();
-              canvasControl.TakingDamage();
-              Destroy(gameObject,4f);
+              if (playerHealth.TakeDamage())
+              {
+                  StartCoroutine(BlinkEffect());
+                  istakingDamagePlant = true;
+              }
+              Destroy(gameObject, 4f);
 
              } 
                
