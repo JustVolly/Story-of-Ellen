@@ -40,6 +40,8 @@ public class PlayerRespawnController : MonoBehaviour
         Transform checkpoint = GameSession.Instance != null ? GameSession.Instance.ActiveCheckpoint : null;
         Transform target = checkpoint != null ? checkpoint : fallbackRespawnPoint;
 
+        // Clear ability locks *before* resetting health and restoring physics.
+        GetComponent<PlayerAdvancedMovement>()?.ResetForRespawn();
         transform.position = target != null ? target.position : fallbackPosition;
         Rigidbody2D body = GetComponent<Rigidbody2D>();
         if (body != null)
@@ -51,6 +53,7 @@ public class PlayerRespawnController : MonoBehaviour
         health.ResetHealth();
 
         PlayerMovement movement = GetComponent<PlayerMovement>();
+        movement?.ResetForRespawn();
         if (movement != null && movement.CharacterAnimator != null)
         {
             movement.CharacterAnimator.SetBool("fall", false);
