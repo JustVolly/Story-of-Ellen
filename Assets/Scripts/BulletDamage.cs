@@ -84,13 +84,13 @@ public class BulletDamage : MonoBehaviour
        
        
        
-        if (collision.CompareTag("Player") && (trapofEnemy.isActiveDefence || powerUps.DefenderEffect.isPlaying))
+        if (collision.CompareTag("Player") && ((trapofEnemy != null && trapofEnemy.isActiveDefence) || (powerUps != null && powerUps.IsActive)))
         {
             
             isDefenceSupport = true;
             Debug.Log("Mermi karaktere değdi");
 
-         if(plant.DestroyableBullet != null)
+         if(plant != null && plant.DestroyableBullet != null)
           {
                   Rigidbody2D BulletRb =   plant.DestroyableBullet.GetComponent<Rigidbody2D>();
                   BulletRb.gravityScale = 4.5f;
@@ -103,7 +103,7 @@ public class BulletDamage : MonoBehaviour
 
         
         
-        if (collision.CompareTag("Player") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
+        if (collision.CompareTag("Player") && (trapofEnemy == null || !trapofEnemy.isActiveDefence) && (powerUps == null || !powerUps.IsActive))
              {
               if (playerHealth.TakeDamage())
               {
