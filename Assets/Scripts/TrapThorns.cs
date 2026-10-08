@@ -63,7 +63,7 @@ public class TrapThorns : MonoBehaviour
         {
           StartCoroutine(bulletDamage.BlinkEffect());
           
-          if (powerUp.isPowerDefence) { return; }
+          if (powerUp != null && powerUp.IsActive) { return; }
             
             
             isTouchingthorn = true;

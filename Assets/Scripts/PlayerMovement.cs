@@ -58,7 +58,7 @@ public class PlayerMovement : MonoBehaviour
     private ScenesManager scenesManager;
     private PlayerHealth playerHealth;
     private TrapThorns trapThorns;
-    private BoosterPowerUp boosterPowerUp;
+    private BoosterElectrics boosterElectrics;
     private LevelUp levelUp;
     private PowerUps powerUps;
     private TrapofEnemy trapofEnemy;
@@ -90,7 +90,7 @@ public class PlayerMovement : MonoBehaviour
 
         scenesManager = FindAnyObjectByType<ScenesManager>();
         trapThorns = FindAnyObjectByType<TrapThorns>();
-        boosterPowerUp = FindAnyObjectByType<BoosterPowerUp>();
+        boosterElectrics = FindAnyObjectByType<BoosterElectrics>();
         levelUp = FindAnyObjectByType<LevelUp>();
         powerUps = FindAnyObjectByType<PowerUps>();
         trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
@@ -154,7 +154,7 @@ public class PlayerMovement : MonoBehaviour
     private void ApplyHorizontalMovement()
     {
         float input = HorizontalInput();
-        float speedMultiplier = boosterPowerUp != null && boosterPowerUp.isBooster ? boosterSpeedMultiplier : 1f;
+        float speedMultiplier = boosterElectrics != null && boosterElectrics.IsActive ? boosterSpeedMultiplier : 1f;
         float apexBonus = !isGround && IsNearApex() ? apexHorizontalBonus : 0f;
         float targetSpeed = input * (maxRunSpeed + apexBonus) * speedMultiplier;
 
@@ -394,7 +394,7 @@ public class PlayerMovement : MonoBehaviour
     private bool DefenceActive()
     {
         bool legacyDefence = trapofEnemy != null && trapofEnemy.isActiveDefence;
-        bool effectDefence = powerUps != null && powerUps.DefenderEffect != null && powerUps.DefenderEffect.isPlaying;
+        bool effectDefence = powerUps != null && powerUps.IsActive;
         return legacyDefence || effectDefence;
     }
 
@@ -413,7 +413,7 @@ public class PlayerMovement : MonoBehaviour
             playerHealth?.TakeDamage();
         }
 
-        if (other.CompareTag("Enemy") && boosterPowerUp != null && boosterPowerUp.isBooster)
+        if (other.CompareTag("Enemy") && boosterElectrics != null && boosterElectrics.IsActive)
         {
             BoxCollider2D collider = other.GetComponent<BoxCollider2D>();
             if (collider != null) collider.isTrigger = true;

@@ -1,29 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class DefencePowerUp : MonoBehaviour
 {
+    // Retained for existing prefab serialization; runtime state lives in PowerUps.
     public bool isDefence;
+    private bool collected;
 
-    TrapofEnemy trapofEnemy;
-
-    private void Start() 
+    private void OnTriggerEnter2D(Collider2D other)
     {
-       trapofEnemy = FindAnyObjectByType<TrapofEnemy>();
+        if (collected || !other.CompareTag("Player")) return;
 
-    }
-   void OnTriggerEnter2D(Collider2D other) 
-   {
-      if (other.gameObject.tag == "Player")
-      {
+        PowerUps controller = other.GetComponentInParent<PowerUps>();
+        if (controller == null) controller = FindAnyObjectByType<PowerUps>();
+
+        if (controller == null)
+        {
+            Debug.LogWarning("Defence pickup requires an active PowerUps controller.", this);
+            return;
+        }
+
+        collected = true;
         isDefence = true;
-        trapofEnemy.isActiveDefence = isDefence;        
-        Destroy(gameObject,0.3f);
-      }
-
-   }
-
-   
+        controller.ActivateDefence();
+        Destroy(gameObject);
+    }
 }

@@ -46,7 +46,7 @@ public class TrapofEnemy : MonoBehaviour
 private void OnTriggerEnter2D(Collider2D collision)
 {
         
-    if(collision.gameObject.tag == "Player" && (isActiveDefence || powerUps.DefenderEffect.isPlaying)) 
+    if(collision.gameObject.tag == "Player" && (isActiveDefence || (powerUps != null && powerUps.IsActive))) 
     {    
                Debug.Log("Saw zarar vermiyor");
                 return;

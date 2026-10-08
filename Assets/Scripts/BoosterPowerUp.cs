@@ -1,19 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BoosterPowerUp : MonoBehaviour
 {
-   public bool isBooster;
-    
-    void OnTriggerEnter2D(Collider2D other) 
-   {
-      if (other.gameObject.tag == "Player")
-      {
+    // Retained for existing prefab serialization; runtime state lives in BoosterElectrics.
+    public bool isBooster;
+    private bool collected;
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (collected || !other.CompareTag("Player")) return;
+
+        BoosterElectrics controller = other.GetComponentInParent<BoosterElectrics>();
+        if (controller == null) controller = FindAnyObjectByType<BoosterElectrics>();
+
+        if (controller == null)
+        {
+            Debug.LogWarning("Booster pickup requires an active BoosterElectrics controller.", this);
+            return;
+        }
+
+        collected = true;
         isBooster = true;
-        Destroy(gameObject,0.3f);
-      }
-
-   }
-
+        controller.ActivateBooster();
+        Destroy(gameObject);
+    }
 }
