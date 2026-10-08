@@ -471,6 +471,9 @@ IEnumerator WaitingBirthParticle()
 
         if(SceneManager.GetActiveScene().buildIndex == 1)
         {
+            ProgressionSave.Data progress = ProgressionSave.Load();
+            progress.highestUnlockedLevel = Mathf.Max(progress.highestUnlockedLevel, 2);
+            ProgressionSave.Save(progress);
             canvascontrol.Star1.fillAmount = 1f;
             canvascontrol.Star2.fillAmount = 1f;
             canvascontrol.Star3.fillAmount = 1f;
