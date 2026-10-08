@@ -14,7 +14,7 @@ public class VerticalSliceDirector : MonoBehaviour
     public void Advance()
     {
         if (currentBeat == Beat.Complete) return;
-        currentBeat++;
+        currentBeat = (Beat)Mathf.Min((int)Beat.Complete, (int)currentBeat + 1);
         ApplyBeat();
     }
 
