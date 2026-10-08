@@ -431,6 +431,8 @@ public static class EllenProductionSceneInstaller
         if (SceneManager.GetActiveScene().name == "TwoScene")
             EnsureDashButton(abilities);
 
+        EllenProductionLevelDesigner.ApplyToActiveScene();
+
         EditorUtility.SetDirty(player);
         EditorUtility.SetDirty(productionRoot);
         EditorUtility.SetDirty(respawn);
