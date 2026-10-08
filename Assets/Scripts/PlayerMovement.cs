@@ -126,7 +126,7 @@ public class PlayerMovement : MonoBehaviour
         {
            
            TrapEffect.Play();
-           playerHealth.currenthealth--;
+           playerHealth.TakeDamage();
         }
         
         if (other.gameObject.tag == "Enemy" && boosterPowerUp.isBooster)
@@ -149,8 +149,7 @@ public class PlayerMovement : MonoBehaviour
         {
            
            TrapEffect.Play();
-           playerHealth.currenthealth--;
-           canvasControl.TakingDamage();
+           playerHealth.TakeDamage();
         }
         
     }
@@ -195,6 +194,11 @@ public class PlayerMovement : MonoBehaviour
         RemainingJumping = Mathf.Clamp(RemainingJumping, 0, MaxJumping);
         coyoteTimeCounter = isGround ? coyoteTime : Mathf.Max(0f, coyoteTimeCounter - Time.deltaTime);
         jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.deltaTime);
+
+        if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f && RemainingJumping > 0)
+        {
+            ExecuteJump();
+        }
         
         if (isGround)
         {
@@ -356,10 +360,16 @@ public class PlayerMovement : MonoBehaviour
 
         jumpBufferCounter = jumpBufferTime;
 
-        bool canUseGroundJump = coyoteTimeCounter > 0f && RemainingJumping > 0;
-        bool canUseAirJump = !isGround && RemainingJumping > 0;
+        bool canJumpNow = coyoteTimeCounter > 0f || (!isGround && RemainingJumping > 0);
+        if (canJumpNow)
+        {
+            ExecuteJump();
+        }
+    }
 
-        if (!canUseGroundJump && !canUseAirJump)
+    private void ExecuteJump()
+    {
+        if (RemainingJumping <= 0)
         {
             return;
         }
