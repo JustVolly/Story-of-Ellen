@@ -16,6 +16,7 @@ public class BulletDamage : MonoBehaviour
 
     SpriteRenderer CharacterSprite;
     private Coroutine Blinking;
+    private bool isBlinking;
     
     
     
@@ -49,7 +50,10 @@ public class BulletDamage : MonoBehaviour
 
     public IEnumerator BlinkEffect()
     {
-       
+        if (isBlinking) yield break;
+        isBlinking = true;
+        elapsedTime = 0f;
+
         while (elapsedTime < blinkDuration)
         {
             CharacterSprite.color = Color.red;
@@ -63,8 +67,8 @@ public class BulletDamage : MonoBehaviour
         }
 
         CharacterSprite.color = Color.white;
-       
-
+        elapsedTime = 0f;
+        isBlinking = false;
     }
 
   
@@ -80,7 +84,7 @@ public class BulletDamage : MonoBehaviour
        
        
        
-        if (collision.gameObject.tag == "Player" && (trapofEnemy.isActiveDefence || powerUps.DefenderEffect.isPlaying))
+        if (collision.CompareTag("Player") && (trapofEnemy.isActiveDefence || powerUps.DefenderEffect.isPlaying))
         {
             
             isDefenceSupport = true;
@@ -99,7 +103,7 @@ public class BulletDamage : MonoBehaviour
 
         
         
-        if(collision.gameObject.tag == "Player" && (!trapofEnemy.isActiveDefence || !powerUps.DefenderEffect.isPlaying))
+        if (collision.CompareTag("Player") && !trapofEnemy.isActiveDefence && !powerUps.DefenderEffect.isPlaying)
              {
               StartCoroutine(BlinkEffect());
               istakingDamagePlant = true;
