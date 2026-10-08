@@ -1,92 +1,135 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.Tilemaps;
 
 public class PlayerHealth : MonoBehaviour
 {
-    
-    PlayerMovement playerMovement;
-    BulletDamage bulletDamage;
+    [SerializeField, Min(1)] private int maxHealth = 3;
+    [SerializeField, Min(0f)] private float damageInvulnerabilityDuration = 0.75f;
+    [SerializeField] private float GravityScale = 1f;
 
-    private int health = 3;
     public int currenthealth;
     public bool isAlive = true;
-  
+    public int MaxHealth => maxHealth;
+    public bool IsInvulnerable => invulnerabilityTimer > 0f;
 
-  
+    public event Action<int, int> HealthChanged;
+    public event Action Died;
 
-    private Rigidbody2D PlayerRigid;
-    private SpriteRenderer CharacterSprite;
+    private PlayerMovement playerMovement;
+    private Rigidbody2D playerRigid;
+    private BoxCollider2D playerBoxCollider;
+    private CapsuleCollider2D playerCapsuleCollider;
+    private float invulnerabilityTimer;
+    private bool deathApplied;
+
     public CompositeCollider2D CompositeCollider;
-    private BoxCollider2D PlayerBoxCollider;
-    private CapsuleCollider2D PlayerCapsuleCollider;
-    private int JumpForce = 500;
-    [SerializeField] float GravityScale;
-   
-   void Awake() 
-   {
-      PlayerRigid = GameObject.FindGameObjectWithTag("Player").GetComponent<Rigidbody2D>();
-      PlayerBoxCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<BoxCollider2D>();
-      PlayerCapsuleCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<CapsuleCollider2D>();
-      bulletDamage = FindObjectOfType<BulletDamage>();
-      CharacterSprite = GameObject.FindGameObjectWithTag("Player").GetComponent<SpriteRenderer>();
 
-   }  
+    private void Awake()
+    {
+        playerRigid = GetComponent<Rigidbody2D>();
+        playerBoxCollider = GetComponent<BoxCollider2D>();
+        playerCapsuleCollider = GetComponent<CapsuleCollider2D>();
+        playerMovement = GetComponent<PlayerMovement>();
+    }
 
-   void Start() 
-   {
-    currenthealth = health;
-    playerMovement = FindObjectOfType<PlayerMovement>();
-
-   } 
-
-  
+    private void Start()
+    {
+        ResetHealth();
+    }
 
     private void Update()
     {
-        
-        currenthealth = Mathf.Clamp(currenthealth, 0, 3);
-    
-    
-     if(currenthealth <= 0)
-       {
-           
-           isAlive = false;
-          
-          
-
-            playerMovement.CharacterAnimator.SetBool("fall", true);
-            playerMovement.CharacterAnimator.SetBool("idle", false);
-
-
-
-            CompositeCollider.isTrigger = true;
-            PlayerRigid.gravityScale = GravityScale;
-            PlayerBoxCollider.isTrigger = true;
-            PlayerCapsuleCollider.isTrigger = true;
-
-        } 
-       
+        if (invulnerabilityTimer > 0f)
+        {
+            invulnerabilityTimer = Mathf.Max(0f, invulnerabilityTimer - Time.deltaTime);
+        }
     }
 
-    
+    public bool TakeDamage(int amount = 1, bool ignoreInvulnerability = false)
+    {
+        if (!isAlive || amount <= 0 || (!ignoreInvulnerability && IsInvulnerable))
+        {
+            return false;
+        }
+
+        currenthealth = Mathf.Clamp(currenthealth - amount, 0, maxHealth);
+        invulnerabilityTimer = damageInvulnerabilityDuration;
+        HealthChanged?.Invoke(currenthealth, maxHealth);
+
+        if (currenthealth <= 0)
+        {
+            ApplyDeath();
+        }
+
+        return true;
+    }
+
     public void DecreaseHealth()
     {
-        currenthealth--;
-        
+        TakeDamage();
+    }
+
+    public void Heal(int amount = 1)
+    {
+        if (!isAlive || amount <= 0)
+        {
+            return;
+        }
+
+        currenthealth = Mathf.Clamp(currenthealth + amount, 0, maxHealth);
+        HealthChanged?.Invoke(currenthealth, maxHealth);
+    }
+
+    public void ResetHealth()
+    {
+        currenthealth = maxHealth;
+        isAlive = true;
+        deathApplied = false;
+        invulnerabilityTimer = 0f;
+        HealthChanged?.Invoke(currenthealth, maxHealth);
+    }
+
+    private void ApplyDeath()
+    {
+        if (deathApplied)
+        {
+            return;
+        }
+
+        deathApplied = true;
+        isAlive = false;
+
+        if (playerMovement != null && playerMovement.CharacterAnimator != null)
+        {
+            playerMovement.CharacterAnimator.SetBool("fall", true);
+            playerMovement.CharacterAnimator.SetBool("idle", false);
+        }
+
+        if (CompositeCollider != null)
+        {
+            CompositeCollider.isTrigger = true;
+        }
+
+        if (playerRigid != null)
+        {
+            playerRigid.gravityScale = GravityScale;
+        }
+
+        if (playerBoxCollider != null)
+        {
+            playerBoxCollider.isTrigger = true;
+        }
+
+        if (playerCapsuleCollider != null)
+        {
+            playerCapsuleCollider.isTrigger = true;
+        }
+
+        Died?.Invoke();
     }
 
     public bool isAliving()
     {
         return isAlive;
     }
-
-
-   
-
-   
 }
