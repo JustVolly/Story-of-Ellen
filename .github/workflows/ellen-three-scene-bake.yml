@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/bake_three_scene_authored.py'
       - 'tools/expand_three_scene_authored.py'
+      - 'tools/fix_three_scene_visibility.py'
       - '.github/workflows/ellen-three-scene-bake.yml'
   workflow_dispatch:
 
@@ -24,6 +25,7 @@ jobs:
         run: |
           python3 tools/bake_three_scene_authored.py
           python3 tools/expand_three_scene_authored.py
+          python3 tools/fix_three_scene_visibility.py
           git diff --check -- Assets/Scenes/ThreeScene.unity
           grep -q 'AstralCryptAuthored' Assets/Scenes/ThreeScene.unity
           grep -q 'Astral_Expansion_Barricade_01' Assets/Scenes/ThreeScene.unity
