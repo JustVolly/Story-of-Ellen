@@ -12,13 +12,18 @@ public class AbilityPickup : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (collected || !other.CompareTag("Player")) return;
+        if (collected || ability == PlayerAbilityController.Ability.None || !other.CompareTag("Player")) return;
         PlayerAbilityController controller = other.GetComponent<PlayerAbilityController>();
         if (controller == null) return;
 
         collected = true;
         controller.Unlock(ability);
-        if (pickupEffect != null) Instantiate(pickupEffect, transform.position, Quaternion.identity);
+        if (pickupEffect != null)
+        {
+            ParticleSystem effect = Instantiate(pickupEffect, transform.position, Quaternion.identity);
+            ParticleSystem.MainModule main = effect.main;
+            Destroy(effect.gameObject, main.duration + main.startLifetime.constantMax + 0.25f);
+        }
         AudioManager.Instance?.PlaySfx(pickupSound);
         if (director != null) director.SetBeat(nextBeat);
         Destroy(gameObject);
