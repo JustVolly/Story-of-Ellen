@@ -153,7 +153,7 @@ public static class EllenProductionLevelDesigner
         CreateBeat(root.transform, "Beat_FinalAscent", new Vector2(558f, -37f), director, VerticalSliceDirector.Beat.Traversal);
 
         CreateShrine(root.transform, "Shrine_01", new Vector2(72f, -39f));
-        CreateWallJumpShaft(root.transform, "WallJumpShaft_01", 126f, -20f, 12f, 22f);
+        CreateWallJumpShaft(root.transform, "WallJumpShaft_01", 126f, -24f, 12f, 40f);
         CreateMemory(root.transform, "Memory_01_FirstAscent", new Vector2(126f, -6.5f));
 
         CreateSecret(root.transform, "Secret_SpiritBalcony", new Vector2(248f, -19f), new Vector2(9f, 7f));
@@ -163,7 +163,7 @@ public static class EllenProductionLevelDesigner
         CreateDashBarrier(root.transform, "DashBarrier_Chain", new Vector2(458f, -36.5f), new Vector2(1.6f, 12f));
         CreateShrine(root.transform, "Shrine_02", new Vector2(505f, -39f));
 
-        CreateWallJumpShaft(root.transform, "WallJumpShaft_02", 585f, -20f, 12f, 22f);
+        CreateWallJumpShaft(root.transform, "WallJumpShaft_02", 585f, -24f, 12f, 40f);
         CreateMemory(root.transform, "Memory_03_FinalAscent", new Vector2(585f, -6.5f));
 
         CreateObjectiveBarrier(
@@ -414,11 +414,13 @@ public static class EllenProductionLevelDesigner
         GameObject source = FindInScene("Snail2");
         if (source == null) source = FindInScene("Snail");
 
+        // Some scene variants do not include Snail2. Do not silently create
+        // an unbeatable boss level: fall back to the committed enemy prefab.
         if (source == null)
-        {
-            Debug.LogWarning("[Ellen Level Design] No Snail/Snail2 source found for Guardian boss.");
-            return;
-        }
+            source = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Snail.prefab");
+        if (source == null)
+            throw new System.InvalidOperationException(
+                "Level 2 Guardian needs Snail/Snail2 or Assets/Prefabs/Snail.prefab.");
 
         GameObject boss = Object.Instantiate(source, parent);
         boss.name = "SpiritGuardian";
