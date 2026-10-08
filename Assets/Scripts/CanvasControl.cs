@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 
 public class CanvasControl : MonoBehaviour
@@ -125,15 +123,12 @@ public class CanvasControl : MonoBehaviour
        CanvasTimer();
       
 
-        if(playerHealth.currenthealth <= 0)
-        {
-            Left.interactable = false;
-            Right.interactable = false;
-            Up.interactable = false;
-            Fire.interactable = false;
-            Stop.interactable = false;
-
-        }
+        bool controlsEnabled = playerHealth.isAlive;
+        Left.interactable = controlsEnabled;
+        Right.interactable = controlsEnabled;
+        Up.interactable = controlsEnabled;
+        Fire.interactable = controlsEnabled;
+        Stop.interactable = controlsEnabled;
 
         
         
@@ -174,15 +169,6 @@ public class CanvasControl : MonoBehaviour
 
        }
 
-
-    }
-
-    IEnumerator WaitAnimation()
-    {
-        yield return new WaitForSeconds(WaitAnimationDuration);
-        playerMovement.myRigidbody.gravityScale = GravityForPlayer;
-        GameObject.FindWithTag("Player").GetComponent<CapsuleCollider2D>().isTrigger = true;
-        GameObject.FindWithTag("Player").GetComponent<BoxCollider2D>().isTrigger = true;
 
     }
 
