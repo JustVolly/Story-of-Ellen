@@ -72,7 +72,10 @@ public sealed class EllenGameplayInput : MonoBehaviour
         }
 
         Mouse mouse = Mouse.current;
-        if (mouse != null) firePressed |= mouse.leftButton.wasPressedThisFrame;
+        // Touchscreens can synthesize a mouse click: UI taps must not fire
+        // projectiles on mobile devices.
+        if (!Application.isMobilePlatform && mouse != null)
+            firePressed |= mouse.leftButton.wasPressedThisFrame;
 #elif ENABLE_LEGACY_INPUT_MANAGER
         left = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
         right = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
@@ -81,7 +84,7 @@ public sealed class EllenGameplayInput : MonoBehaviour
         wallPressed = Input.GetKeyDown(KeyCode.E);
         spiritPressed = Input.GetKeyDown(KeyCode.Q);
         firePressed = Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J) ||
-                      Input.GetMouseButtonDown(0);
+                      (!Application.isMobilePlatform && Input.GetMouseButtonDown(0));
 #endif
 
         if (movement != null)
