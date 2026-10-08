@@ -36,6 +36,12 @@ public class SpiritWorldPresentation : MonoBehaviour
 
     private IEnumerator TransitionTo(Color target)
     {
+        if (tintedSprites == null || tintedSprites.Length == 0)
+        {
+            transition = null;
+            yield break;
+        }
+
         Color[] starts = new Color[tintedSprites.Length];
         for (int i = 0; i < tintedSprites.Length; i++)
             starts[i] = tintedSprites[i] != null ? tintedSprites[i].color : Color.white;
