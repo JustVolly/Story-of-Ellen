@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,6 +15,8 @@ public class StartScene : MonoBehaviour
     public Sprite Sound;
 
     [SerializeField] private AudioClip[] Clips;
+    [SerializeField] private TextMeshProUGUI playLabel;
+    [SerializeField] private GameObject replayLevelOneButton;
     public AudioSource Audio;
 
     private bool isPressAudioControl;
@@ -27,6 +30,16 @@ public class StartScene : MonoBehaviour
     private void Start()
     {
         ConfigureMusic();
+        RefreshProgressionUi();
+    }
+
+    private void RefreshProgressionUi()
+    {
+        ProgressionSave.Data data = ProgressionSave.Load();
+        bool canContinue = data.highestUnlockedLevel >= 2;
+
+        if (playLabel != null) playLabel.text = canContinue ? "CONTINUE" : "PLAY";
+        if (replayLevelOneButton != null) replayLevelOneButton.SetActive(canContinue);
     }
 
     private void ConfigureMusic()
