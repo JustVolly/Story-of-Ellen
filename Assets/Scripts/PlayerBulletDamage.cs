@@ -23,9 +23,16 @@ public class PlayerBulletDamage : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other) 
 {
-    if(other.gameObject.tag == "Enemy")
+    if (other.CompareTag("Enemy"))
     {
-         
+         EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
+         if (enemyHealth != null)
+         {
+             enemyHealth.TakeDamage(1);
+             Destroy(gameObject);
+             return;
+         }
+
          Destroy(other.gameObject,4f);
         //bullet
          gameObject.GetComponent<CircleCollider2D>().isTrigger = false;
@@ -45,7 +52,7 @@ public class PlayerBulletDamage : MonoBehaviour
 
     }
 
-    if (other.gameObject.tag == "Snail")
+    if (other.CompareTag("Snail"))
     {
       other.GetComponent<EnemyDamage>().isPlaySnailHitted = true;
        
