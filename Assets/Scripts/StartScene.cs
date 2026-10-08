@@ -39,7 +39,7 @@ public class StartScene : MonoBehaviour
         bool canContinue = data.highestUnlockedLevel >= 2;
 
         if (playLabel != null)
-            playLabel.text = data.campaignCompleted ? "REPLAY LEVEL 2" : canContinue ? "CONTINUE" : "PLAY";
+            playLabel.text = data.campaignCompleted ? "REPLAY LEVEL 3" : canContinue ? "CONTINUE" : "PLAY";
         if (replayLevelOneButton != null) replayLevelOneButton.SetActive(canContinue);
     }
 
@@ -113,7 +113,9 @@ public class StartScene : MonoBehaviour
         Time.timeScale = 1f;
 
         ProgressionSave.Data data = ProgressionSave.Load();
-        string targetScene = data.highestUnlockedLevel >= 2 ? "TwoScene" : "OneScene";
+        string targetScene = data.highestUnlockedLevel >= 3
+            ? "ThreeScene"
+            : data.highestUnlockedLevel >= 2 ? "TwoScene" : "OneScene";
 
         if (loaderPanel != null)
             loaderPanel.LoadScene(targetScene);
