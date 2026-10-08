@@ -648,8 +648,9 @@ public static class EllenProductionSceneInstaller
         resultPanelRect.anchorMin = resultPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
         resultPanelRect.pivot = new Vector2(0.5f, 0.5f);
         resultPanelRect.anchoredPosition = Vector2.zero;
-        resultPanelRect.sizeDelta = new Vector2(520f, 310f);
-        resultPanel.GetComponent<Image>().raycastTarget = false;
+        resultPanelRect.sizeDelta = new Vector2(560f, 420f);
+        // Block clicks intended for the playfield under the result window.
+        resultPanel.GetComponent<Image>().raycastTarget = true;
 
         GameObject rankObject = CreateText("ResultRank", resultPanelRect, "A", 58f);
         RectTransform rankRect = rankObject.GetComponent<RectTransform>();
@@ -677,6 +678,13 @@ public static class EllenProductionSceneInstaller
         resultSo.FindProperty("memoriesText").objectReferenceValue = memoriesResultObject.GetComponent<TextMeshProUGUI>();
         resultSo.FindProperty("secretsText").objectReferenceValue = secretsResultObject.GetComponent<TextMeshProUGUI>();
         resultSo.ApplyModifiedPropertiesWithoutUndo();
+
+        CreateResultActionButton(resultPanelRect, "ContinueButton",
+            "CONTINUE", new Vector2(-180f, -334f), resultPresenter.ContinueCampaign);
+        CreateResultActionButton(resultPanelRect, "ReplayButton",
+            "REPLAY", new Vector2(0f, -334f), resultPresenter.ReplayLevel);
+        CreateResultActionButton(resultPanelRect, "MenuButton",
+            "MENU", new Vector2(180f, -334f), resultPresenter.ReturnToMenu);
 
         resultPanel.SetActive(false);
     }
@@ -790,6 +798,31 @@ public static class EllenProductionSceneInstaller
         }
 
         StyleButton(wallJump);
+    }
+
+    private static void CreateResultActionButton(
+        RectTransform parent, string name, string title, Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction action)
+    {
+        GameObject host = CreateImage(name, parent, new Color(0.13f, 0.23f, 0.32f, 0.98f));
+        RectTransform buttonRect = host.GetComponent<RectTransform>();
+        buttonRect.anchorMin = buttonRect.anchorMax = new Vector2(0.5f, 1f);
+        buttonRect.pivot = new Vector2(0.5f, 1f);
+        buttonRect.anchoredPosition = anchoredPosition;
+        buttonRect.sizeDelta = new Vector2(160f, 54f);
+
+        host.GetComponent<Image>().raycastTarget = true;
+        Button button = EnsureComponent<Button>(host);
+        button.onClick = new Button.ButtonClickedEvent();
+        UnityEventTools.AddPersistentListener(button.onClick, action);
+        StyleButton(host);
+
+        GameObject label = CreateText(name + "Label", buttonRect, title, 19f);
+        RectTransform labelRect = label.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
     }
 
     private static void PositionResultRow(RectTransform rect, float y)
