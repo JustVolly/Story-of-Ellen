@@ -273,6 +273,11 @@ public class PlayerMovement : MonoBehaviour
         isOutOfViewCamera = true;
         Debug.Log("Karakter Kamera görüş alani dişinda" + gameObject.name);
     }
+
+    void OnBecameVisible()
+    {
+        isOutOfViewCamera = false;
+    }
     
    
 
@@ -433,7 +438,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void StopRight()
     {
-        myRigidbody.linearVelocity = Vector2.zero;
+        myRigidbody.linearVelocity = new Vector2(0f, myRigidbody.linearVelocity.y);
         CharacterAnimator.SetBool("idle", true);
         CharacterAnimator.SetBool("run", false);
         CharacterAnimator.SetBool("jump", false);
