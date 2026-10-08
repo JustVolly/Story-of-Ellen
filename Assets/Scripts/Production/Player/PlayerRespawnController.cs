@@ -41,6 +41,13 @@ public class PlayerRespawnController : MonoBehaviour
         Transform target = checkpoint != null ? checkpoint : fallbackRespawnPoint;
 
         transform.position = target != null ? target.position : fallbackPosition;
+        Rigidbody2D body = GetComponent<Rigidbody2D>();
+        if (body != null)
+        {
+            // Clear inherited fall/dash momentum before control is restored.
+            body.linearVelocity = Vector2.zero;
+            body.angularVelocity = 0f;
+        }
         health.ResetHealth();
 
         PlayerMovement movement = GetComponent<PlayerMovement>();
