@@ -12,6 +12,9 @@ public static class ProgressionSave
         public int totalMemoryFragments;
         public int totalSecrets;
         public int unlockedAbilities = 4;
+        public string bestRank = "";
+        public float bestCompletionTime;
+        public int bestDeaths = -1;
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
     }
