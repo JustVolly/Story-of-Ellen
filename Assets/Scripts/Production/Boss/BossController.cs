@@ -45,6 +45,24 @@ public class BossController : MonoBehaviour
         PhaseChanged?.Invoke(next);
     }
 
+    /// <summary>Return an undefeated guardian to phase one for a new arena attempt.</summary>
+    public void ResetForRetry()
+    {
+        if (health == null || health.IsDead) return;
+        Deactivate(phaseTwoObjects);
+        Deactivate(phaseThreeObjects);
+        CurrentPhase = Phase.One;
+        health.RestoreFullHealth();
+        PhaseChanged?.Invoke(CurrentPhase);
+    }
+
+    private static void Deactivate(GameObject[] objects)
+    {
+        if (objects == null) return;
+        foreach (GameObject item in objects)
+            if (item != null) item.SetActive(false);
+    }
+
     private void OnDied()
     {
         if (levelFlow != null) levelFlow.RegisterBossDefeat();
