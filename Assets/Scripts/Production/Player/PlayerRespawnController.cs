@@ -9,8 +9,13 @@ public class PlayerRespawnController : MonoBehaviour
 
     private PlayerHealth health;
     private bool respawning;
+    private Vector3 fallbackPosition;
 
-    private void Awake() => health = GetComponent<PlayerHealth>();
+    private void Awake()
+    {
+        health = GetComponent<PlayerHealth>();
+        fallbackPosition = transform.position;
+    }
 
     private void OnEnable()
     {
@@ -35,7 +40,7 @@ public class PlayerRespawnController : MonoBehaviour
         Transform checkpoint = GameSession.Instance != null ? GameSession.Instance.ActiveCheckpoint : null;
         Transform target = checkpoint != null ? checkpoint : fallbackRespawnPoint;
 
-        if (target != null) transform.position = target.position;
+        transform.position = target != null ? target.position : fallbackPosition;
         health.ResetHealth();
 
         PlayerMovement movement = GetComponent<PlayerMovement>();
