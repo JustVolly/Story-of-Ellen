@@ -21,8 +21,8 @@ public class CanvasControl : MonoBehaviour
 
     [Header("Time")]
     [SerializeField] int TotalTime = 180;
-    [SerializeField] int TimeSpeed = 5;
-    public float Timer = 5f;
+    [SerializeField] int TimeSpeed = 1;
+    public float Timer = 1f;
     public float DecreaseTimerFillAmount;
     public float DecreaseSpeed = 10f;
     public int CurrentTime;
@@ -135,14 +135,10 @@ public class CanvasControl : MonoBehaviour
          return;
        }
        
-       if (!scenesManager.isPressStopButton || playerHealth.currenthealth > 0)
+       if (!scenesManager.isPressStopButton && playerHealth.currenthealth > 0)
        {
            CurrentTime = Mathf.Clamp(CurrentTime, 0, TotalTime);
-           if (CurrentTime < 0)
-           {
-              CurrentTime = 0;
-           }
-           Timer -= Time.timeScale * TimeSpeed * Time.deltaTime;
+           Timer -= Time.deltaTime * TimeSpeed;
        }
 
        
@@ -154,10 +150,10 @@ public class CanvasControl : MonoBehaviour
           Times.text = CurrentTime.ToString();
     
    
-          float DecreaseTimerFillAmount = (1f / 180f);
-          ClockFire.fillAmount -= DecreaseTimerFillAmount;
+          DecreaseTimerFillAmount = 1f / Mathf.Max(1, TotalTime);
+          ClockFire.fillAmount = Mathf.Clamp01(ClockFire.fillAmount - DecreaseTimerFillAmount);
 
-          Timer = 5f;
+          Timer = 1f;
        }  
 
        if (CurrentTime == 0 || CurrentTime < 0)
