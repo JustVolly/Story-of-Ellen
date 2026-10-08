@@ -17,11 +17,17 @@ public class LevelFlowController : MonoBehaviour
     private bool completed;
 
     public bool Completed => completed;
+    public int RequiredMemories => requiredMemories;
+    public int RequiredSecrets => requiredSecrets;
+    public bool RequiresBossDefeat => requireBossDefeat;
+    public bool BossDefeated => bossDefeated;
+    public event Action ObjectivesChanged;
     public event Action<LevelResult> LevelCompleted;
 
     public void RegisterBossDefeat()
     {
         bossDefeated = true;
+        ObjectivesChanged?.Invoke();
         TryComplete();
     }
 
