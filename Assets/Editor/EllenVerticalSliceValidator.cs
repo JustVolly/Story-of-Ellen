@@ -76,14 +76,19 @@ public static class EllenVerticalSliceValidator
         errors += Require<PlayerMovementFeedback>();
         errors += Require<SpiritWorldController>();
         errors += Require<LevelFlowController>();
+        errors += Require<LevelEntryConfigurator>();
+        errors += Require<SpiritWorldPresentation>();
         errors += Require<HitStop>();
+        errors += Require<AudioManager>();
 
-        GameObject productionHud = FindNamedObject("ProductionHUD");
-        if (productionHud == null)
-        {
-            Debug.LogError("[Ellen Production] Missing ProductionHUD. Run Ellen/Production/Upgrade Current Scene.");
-            errors++;
-        }
+        errors += RequireNamedObject("ProductionHUD");
+        errors += RequireNamedObject("SpiritHUD");
+        errors += RequireNamedObject("ObjectiveHUD");
+        errors += RequireNamedObject("AbilityToast");
+        errors += RequireNamedObject("SpiritTutorialToast");
+
+        if (SceneManager.GetActiveScene().name == "TwoScene")
+            errors += RequireNamedObject("Dash");
 
         Canvas canvas = FindFirstInScene<Canvas>();
         if (canvas == null)
