@@ -26,6 +26,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
     private PlayerHealth health;
     private PlayerAbilityController abilities;
     private PlayerMovement movement;
+    private float wallCheckDistance;
 
     public bool IsDashing => dashTimer > 0f;
     public bool OverridesLegacyMovement => IsDashing || legacyMovementLockTimer > 0f;
@@ -42,6 +43,7 @@ public class PlayerAdvancedMovement : MonoBehaviour
         health = GetComponent<PlayerHealth>();
         abilities = GetComponent<PlayerAbilityController>();
         movement = GetComponent<PlayerMovement>();
+        if (wallCheck != null) wallCheckDistance = Mathf.Abs(wallCheck.localPosition.x);
     }
 
     private void Update()
@@ -62,7 +64,18 @@ public class PlayerAdvancedMovement : MonoBehaviour
             EndDash();
     }
 
-    public void SetFacing(bool right) => facingRight = right;
+    public void SetFacing(bool right)
+    {
+        facingRight = right;
+
+        if (wallCheck != null)
+        {
+            if (wallCheckDistance <= 0f) wallCheckDistance = Mathf.Abs(wallCheck.localPosition.x);
+            Vector3 local = wallCheck.localPosition;
+            local.x = wallCheckDistance * (right ? 1f : -1f);
+            wallCheck.localPosition = local;
+        }
+    }
 
     public void Dash()
     {
