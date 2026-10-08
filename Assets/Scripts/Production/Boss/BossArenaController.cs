@@ -51,7 +51,8 @@ public class BossArenaController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (started || defeated || !other.CompareTag("Player")) return;
+        if (started || defeated) return;
+        // Accept the player collider even if only its Rigidbody root is tagged.
         PlayerHealth health = other.GetComponentInParent<PlayerHealth>();
         if (health == null || !health.isAlive) return;
 
