@@ -59,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
     private float jumpBufferCounter;
     private float baseGravityScale;
     private int jumpsUsed;
+    private int groundContacts;
     private bool jumpHeld;
 
     private void Awake()
@@ -344,6 +345,7 @@ public class PlayerMovement : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Grounds")) return;
+        groundContacts++;
         isGround = true;
         jumpsUsed = 0;
         RemainingJumping = maxJumps;
@@ -352,8 +354,12 @@ public class PlayerMovement : MonoBehaviour
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Grounds")) return;
-        isGround = false;
-        coyoteCounter = coyoteTime;
+
+        groundContacts = Mathf.Max(0, groundContacts - 1);
+        isGround = groundContacts > 0;
+
+        if (!isGround)
+            coyoteCounter = coyoteTime;
     }
 
     private void OnBecameInvisible()
