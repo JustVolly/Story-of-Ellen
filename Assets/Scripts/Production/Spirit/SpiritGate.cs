@@ -5,6 +5,7 @@ public class SpiritGate : MonoBehaviour
     [SerializeField] private SpiritWorldController spiritWorld;
     [SerializeField] private Collider2D blockingCollider;
     [SerializeField] private SpriteRenderer visual;
+    [SerializeField] private GameObject visualRoot;
     [SerializeField] private bool passableInSpiritWorld = true;
 
     private void Awake()
@@ -30,6 +31,8 @@ public class SpiritGate : MonoBehaviour
     {
         bool passable = passableInSpiritWorld ? spirit : !spirit;
         if (blockingCollider != null) blockingCollider.enabled = !passable;
+        if (visualRoot != null) visualRoot.SetActive(!passable);
+
         if (visual != null)
         {
             Color color = visual.color;
