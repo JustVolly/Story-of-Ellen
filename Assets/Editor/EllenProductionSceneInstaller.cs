@@ -354,6 +354,9 @@ public static class EllenProductionSceneInstaller
         PlayerHealth health = EnsureComponent<PlayerHealth>(player);
         PlayerAdvancedMovement advanced = EnsureComponent<PlayerAdvancedMovement>(player);
         PlayerAbilityController abilities = EnsureComponent<PlayerAbilityController>(player);
+        // Uses the same actions as the existing mobile controls; adds desktop
+        // and gamepad input without replacing the legacy scene's touch UI.
+        EnsureComponent<EllenGameplayInput>(player);
         PlayerRespawnController respawn = EnsureComponent<PlayerRespawnController>(player);
         PlayerMovementFeedback feedback = EnsureComponent<PlayerMovementFeedback>(player);
         PlayerDamagePresenter damagePresenter = EnsureComponent<PlayerDamagePresenter>(player);
