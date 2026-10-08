@@ -1,6 +1,6 @@
 # Story of Ellen — Production Level Design
 
-This document defines the production gameplay identity of the two build levels while preserving the original authored geometry.
+This document defines the production gameplay identity of the three build levels while preserving the original authored geometry.
 
 ## Level 1 — Spirit Discovery
 
@@ -60,6 +60,39 @@ This makes Level 1 teach, reinforce, rest, then test.
 - Result recording/presentation
 - Rank tuning: S 130s, A 205s, all 3 Memories improve mastery/rank value
 
+## Level 3 — Spirit Ascent
+
+**Player promise:** combine every learned traversal verb under pressure. Level 3 introduces Wall Jump, then asks the player to chain Wall Jump, Spirit World and Dash instead of learning another isolated system.
+
+**Runtime span:** approximately x=-41 to x=724.
+
+**Pacing**
+1. **Wall Jump reveal** — Wall Jump unlocks on entry; DASH remains available from Level 2.
+2. **First ascent** — a dedicated two-wall shaft teaches alternating wall jumps with a Memory at the top.
+3. **Recovery / shrine** — the first checkpoint limits repetition while the new verb is still being learned.
+4. **Spirit chain** — a Spirit gate forces the player to switch world state after vertical traversal.
+5. **Dash chain** — a breakable barrier immediately follows, making the player combine previously learned abilities.
+6. **Second shrine** — recovery before the final mastery section.
+7. **Final ascent** — a second wall-jump shaft tests execution rather than introducing a new rule.
+8. **Mastery objective gate** — 2 of 3 Memories are required to exit, while 3/3 remains the optimal mastery target.
+9. **Campaign finish** — the result trigger records the run and the original Finish completes the three-level campaign.
+
+**Production content**
+- Wall Jump unlock on entry
+- Dedicated mobile WALL JUMP control
+- DASH remains available
+- 2 wall-jump shafts
+- 1 Spirit gate
+- 1 Dash-breakable barrier
+- 3 Memory Fragments
+- 2 Spirit Shrines/checkpoints
+- 1 optional secret area
+- 1 two-Memory mastery objective gate
+- 1 result trigger
+- Rank tuning: S 125s, A 195s, 3/3 Memories remains the mastery target
+
+This makes Level 3 a synthesis level instead of another tutorial level.
+
 ## Design rules
 
 - Existing level geometry is preserved unless Play Mode proves a collision or pacing defect.
@@ -72,7 +105,7 @@ This makes Level 1 teach, reinforce, rest, then test.
 ## Unity authoring workflow
 
 1. Run **Ellen > Production > Upgrade Build Scenes**.
-2. Open OneScene and TwoScene separately.
+2. Open OneScene, TwoScene and ThreeScene separately.
 3. Run **Ellen > Production > Validate Current Scene**.
 4. Playtest using `PLAYMODE_PREFLIGHT.md`.
 5. Use **Ellen > Production > Rebuild Current Level Design** only when intentionally regenerating the production layer.
