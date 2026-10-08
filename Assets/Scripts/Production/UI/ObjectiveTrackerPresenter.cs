@@ -8,23 +8,41 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
     [SerializeField] private TextMeshProUGUI secretsText;
     [SerializeField] private TextMeshProUGUI bossText;
 
+    private GameSession session;
+
     private void OnEnable()
     {
-        if (GameSession.Instance != null) GameSession.Instance.SessionChanged += Refresh;
         if (flow != null) flow.ObjectivesChanged += Refresh;
+        BindSession();
+    }
+
+    private void Start()
+    {
+        BindSession();
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (GameSession.Instance != null) GameSession.Instance.SessionChanged -= Refresh;
+        if (session != null) session.SessionChanged -= Refresh;
         if (flow != null) flow.ObjectivesChanged -= Refresh;
+        session = null;
+    }
+
+    private void BindSession()
+    {
+        if (session == GameSession.Instance) return;
+
+        if (session != null) session.SessionChanged -= Refresh;
+        session = GameSession.Instance;
+        if (session != null) session.SessionChanged += Refresh;
     }
 
     private void Refresh()
     {
-        GameSession session = GameSession.Instance;
+        if (session == null) BindSession();
         if (session == null || flow == null) return;
+
         if (memoriesText != null)
         {
             memoriesText.gameObject.SetActive(flow.RequiredMemories > 0);
@@ -36,6 +54,7 @@ public class ObjectiveTrackerPresenter : MonoBehaviour
             secretsText.gameObject.SetActive(flow.RequiredSecrets > 0);
             secretsText.text = $"Secrets {session.SecretsFound}/{flow.RequiredSecrets}";
         }
+
         if (bossText != null)
         {
             bossText.gameObject.SetActive(flow.RequiresBossDefeat);
