@@ -36,36 +36,6 @@ public class EnemyDamage : MonoBehaviour
 
     }
 
-    void Update() 
-    {
-           TouchCount = Mathf.Clamp(TouchCount, 0,2);
-          
-          
-           if(isTouchingEnemy && TouchCount == 0) 
-           {
-               StartCoroutine(bulletDamage.BlinkEffect());
-               TouchCount++; 
-
-           }
-
-           else if(isTouchingEnemy && TouchCount == 1)
-           {
-               StartCoroutine(bulletDamage.BlinkEffect());
-               TouchCount++;
-           }
-
-           else if(isTouchingEnemy && TouchCount == 2)
-           {
-               StartCoroutine(bulletDamage.BlinkEffect());
-           }
-           
-           
-       
-        
-    }
-
-
-
     void OnTriggerEnter2D(Collider2D collision) 
     {
       if(collision.gameObject.tag == "Player" && (defencePowerUp.isDefence || powerUps.DefenderEffect.isPlaying || isPlaySnailHitted))
@@ -78,7 +48,7 @@ public class EnemyDamage : MonoBehaviour
         if(collision.gameObject.tag == "Player")
         {
              isTouchingEnemy = true;
-             
+             StartCoroutine(bulletDamage.BlinkEffect());
              playerHealth.DecreaseHealth();
              canvasControl.TakingDamage();
              EnemyEffect.transform.position = EffectPos.position;
