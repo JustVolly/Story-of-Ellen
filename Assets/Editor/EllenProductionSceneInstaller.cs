@@ -15,7 +15,8 @@ public static class EllenProductionSceneInstaller
     {
         "Assets/Scenes/StartingScene.unity",
         "Assets/Scenes/OneScene.unity",
-        "Assets/Scenes/TwoScene.unity"
+        "Assets/Scenes/TwoScene.unity",
+        "Assets/Scenes/ThreeScene.unity"
     };
 
     [MenuItem("Ellen/Production/Upgrade Build Scenes")]
@@ -41,7 +42,7 @@ public static class EllenProductionSceneInstaller
             EditorSceneManager.OpenScene(previousScene, OpenSceneMode.Single);
 
         AssetDatabase.SaveAssets();
-        Debug.Log("[Ellen Production] StartingScene, OneScene and TwoScene production upgrade completed.");
+        Debug.Log("[Ellen Production] StartingScene plus Levels 1-3 production upgrade completed.");
     }
 
     [MenuItem("Ellen/Production/Upgrade Current Scene")]
@@ -391,10 +392,13 @@ public static class EllenProductionSceneInstaller
         EnsureAudioManager();
 
         SerializedObject levelEntrySo = new SerializedObject(levelEntry);
-        bool isLevelTwo = SceneManager.GetActiveScene().name == "TwoScene";
-        levelEntrySo.FindProperty("levelNumber").intValue = isLevelTwo ? 2 : 1;
-        levelEntrySo.FindProperty("grantOnStart").intValue = isLevelTwo
-            ? (int)PlayerAbilityController.Ability.Dash
+        string activeLevelName = SceneManager.GetActiveScene().name;
+        bool isLevelTwo = activeLevelName == "TwoScene";
+        bool isLevelThree = activeLevelName == "ThreeScene";
+        levelEntrySo.FindProperty("levelNumber").intValue = isLevelThree ? 3 : isLevelTwo ? 2 : 1;
+        levelEntrySo.FindProperty("grantOnStart").intValue = isLevelThree
+            ? (int)(PlayerAbilityController.Ability.Dash | PlayerAbilityController.Ability.WallJump)
+            : isLevelTwo ? (int)PlayerAbilityController.Ability.Dash
             : (int)PlayerAbilityController.Ability.None;
         levelEntrySo.FindProperty("abilities").objectReferenceValue = abilities;
         levelEntrySo.ApplyModifiedPropertiesWithoutUndo();
@@ -433,8 +437,11 @@ public static class EllenProductionSceneInstaller
         AddPanelTransition("WinPanel");
         AddPanelTransition("StopPanel");
 
-        if (SceneManager.GetActiveScene().name == "TwoScene")
+        if (SceneManager.GetActiveScene().name == "TwoScene" || SceneManager.GetActiveScene().name == "ThreeScene")
             EnsureDashButton(abilities);
+
+        if (SceneManager.GetActiveScene().name == "ThreeScene")
+            EnsureWallJumpButton(abilities);
 
         EllenProductionLevelDesigner.ApplyToActiveScene();
 
@@ -739,6 +746,46 @@ public static class EllenProductionSceneInstaller
         }
 
         StyleButton(dash);
+    }
+
+    private static void EnsureWallJumpButton(PlayerAbilityController abilities)
+    {
+        if (FindInScene("WallJump") != null) return;
+
+        GameObject fire = FindInScene("Fire");
+        if (fire == null) return;
+
+        GameObject wallJump = Object.Instantiate(fire, fire.transform.parent);
+        wallJump.name = "WallJump";
+        Undo.RegisterCreatedObjectUndo(wallJump, "Create Wall Jump button");
+
+        RectTransform rect = wallJump.GetComponent<RectTransform>();
+        if (rect != null)
+            rect.anchoredPosition += Vector2.up * 184f;
+
+        Button button = wallJump.GetComponent<Button>();
+        if (button != null)
+        {
+            button.onClick = new Button.ButtonClickedEvent();
+            UnityEventTools.AddPersistentListener(button.onClick, abilities.TryWallJump);
+        }
+
+        TextMeshProUGUI label = wallJump.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (label == null)
+        {
+            GameObject labelObject = CreateText("WallJumpLabel", wallJump.transform, "WALL JUMP", 13f);
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+        }
+        else
+        {
+            label.text = "WALL JUMP";
+        }
+
+        StyleButton(wallJump);
     }
 
     private static void PositionResultRow(RectTransform rect, float y)
