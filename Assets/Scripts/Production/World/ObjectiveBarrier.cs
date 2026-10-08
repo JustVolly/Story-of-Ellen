@@ -6,6 +6,9 @@ public class ObjectiveBarrier : MonoBehaviour
     [SerializeField] private Collider2D blocker;
     [SerializeField] private GameObject visualRoot;
 
+    private GameSession subscribedSession;
+    private bool flowSubscribed;
+
     private void Awake()
     {
         if (flow == null) flow = FindObjectOfType<LevelFlowController>();
@@ -14,15 +17,41 @@ public class ObjectiveBarrier : MonoBehaviour
 
     private void OnEnable()
     {
-        if (GameSession.Instance != null) GameSession.Instance.SessionChanged += Refresh;
-        if (flow != null) flow.ObjectivesChanged += Refresh;
+        Subscribe();
+        Refresh();
+    }
+
+    private void Start()
+    {
+        Subscribe();
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (GameSession.Instance != null) GameSession.Instance.SessionChanged -= Refresh;
-        if (flow != null) flow.ObjectivesChanged -= Refresh;
+        if (subscribedSession != null)
+            subscribedSession.SessionChanged -= Refresh;
+
+        if (flow != null && flowSubscribed)
+            flow.ObjectivesChanged -= Refresh;
+
+        subscribedSession = null;
+        flowSubscribed = false;
+    }
+
+    private void Subscribe()
+    {
+        if (subscribedSession == null && GameSession.Instance != null)
+        {
+            subscribedSession = GameSession.Instance;
+            subscribedSession.SessionChanged += Refresh;
+        }
+
+        if (!flowSubscribed && flow != null)
+        {
+            flow.ObjectivesChanged += Refresh;
+            flowSubscribed = true;
+        }
     }
 
     private void Refresh()
