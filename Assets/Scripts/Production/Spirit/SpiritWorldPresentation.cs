@@ -19,7 +19,9 @@ public class SpiritWorldPresentation : MonoBehaviour
 
     private void OnEnable()
     {
-        if (spiritWorld != null) spiritWorld.WorldChanged += OnWorldChanged;
+        if (spiritWorld == null) return;
+        spiritWorld.WorldChanged += OnWorldChanged;
+        OnWorldChanged(spiritWorld.IsSpiritWorld);
     }
 
     private void OnDisable()
