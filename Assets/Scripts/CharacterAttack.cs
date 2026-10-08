@@ -1,102 +1,85 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
+using System;
 using UnityEngine;
 
 public class CharacterAttack : MonoBehaviour
 {
     [Header("Bullet")]
     public GameObject Bullet;
-     [SerializeField] ParticleSystem BulletParticle;
-    GameObject DestroyableBullet;
-    
-    GameObject DestroyableBulletEffect;
+    [SerializeField] private ParticleSystem BulletParticle;
     public Transform FirePoint;
-    public float BulletForcing = 7f;
-    public int AllBullet = 5;
+    [SerializeField, Min(0.1f)] public float BulletForcing = 7f;
+    [SerializeField, Min(0)] public int AllBullet = 5;
     public int CurrentBullet;
-    public int NumberConfinerofBullet = 5;
-    SpriteRenderer CharacterSprite;
-   
+    [SerializeField, Min(0)] public int NumberConfinerofBullet = 5;
 
-    PlayerMovement playerMovement;
-    CanvasControl canvasControl;
-    LevelUp levelUp;
-   
-    private void Start() 
+    public event Action<int, int> AmmoChanged;
+
+    private PlayerMovement playerMovement;
+    private LevelUp levelUp;
+
+    private void Start()
     {
-        playerMovement = FindObjectOfType<PlayerMovement>();
-        canvasControl = FindObjectOfType<CanvasControl>();
+        playerMovement = GetComponent<PlayerMovement>();
+        if (playerMovement == null) playerMovement = FindObjectOfType<PlayerMovement>();
         levelUp = FindObjectOfType<LevelUp>();
-        BulletParticle.Stop();
-        CurrentBullet = AllBullet;
-       
-       
 
-       
-    
+        if (BulletParticle != null) BulletParticle.Stop();
+
+        NumberConfinerofBullet = Mathf.Max(0, NumberConfinerofBullet);
+        CurrentBullet = Mathf.Clamp(AllBullet, 0, NumberConfinerofBullet);
+        NotifyAmmoChanged();
     }
-    void Update() 
+
+    public void AttackStart()
     {
-      CurrentBullet  =  Mathf.Clamp(CurrentBullet, 0, NumberConfinerofBullet);
+        if (levelUp != null && levelUp.isFinish) return;
+        if (CurrentBullet <= 0) return;
+
+        if (playerMovement == null || Bullet == null || FirePoint == null)
+        {
+            Debug.LogError("[CharacterAttack] Missing PlayerMovement, Bullet prefab, or FirePoint.", this);
+            return;
+        }
+
+        GameObject projectile = Instantiate(Bullet, FirePoint.position, FirePoint.rotation);
+        Rigidbody2D body = projectile.GetComponent<Rigidbody2D>();
+
+        if (body == null)
+        {
+            Debug.LogError("[CharacterAttack] Bullet prefab requires Rigidbody2D.", projectile);
+            Destroy(projectile);
+            return;
+        }
+
+        CurrentBullet = Mathf.Clamp(CurrentBullet - 1, 0, NumberConfinerofBullet);
+        NotifyAmmoChanged();
+
+        if (BulletParticle != null) BulletParticle.Play();
+
+        Vector2 direction = playerMovement.isFacingRight ? Vector2.right : Vector2.left;
+        body.AddForce(direction * BulletForcing, ForceMode2D.Impulse);
+        Destroy(projectile, 4f);
     }
 
-   
-
-public void AttackStart()
-{
-   if(levelUp.isFinish) {  return; }
-   if(CurrentBullet == 0)
+    public void AddAmmo(int amount = 1, bool increaseCapacity = false)
     {
-         return;
+        if (amount <= 0) return;
+
+        if (increaseCapacity)
+            NumberConfinerofBullet = Mathf.Max(0, NumberConfinerofBullet + amount);
+
+        CurrentBullet = Mathf.Clamp(CurrentBullet + amount, 0, NumberConfinerofBullet);
+        NotifyAmmoChanged();
     }
-   
-    if (playerMovement.isFacingRight)
+
+    public void RefillAmmo()
     {
-        CurrentBullet--;
-        
-
-        if (Bullet != null && BulletParticle != null)
-         {
-            DestroyableBullet = Instantiate(Bullet, FirePoint.position, FirePoint.rotation);
-            BulletParticle.Play();
-           
-         }
-        
-        else
-         {
-               Debug.LogError("Bullet veya BulletEffect değişkeni atanmamiş Right!");
-         } 
-
-        Rigidbody2D rb = DestroyableBullet.GetComponent<Rigidbody2D>(); 
-        rb.AddForce(-Vector2.left * BulletForcing, ForceMode2D.Impulse);
-
-        Destroy(DestroyableBullet, 4f);
-        
+        CurrentBullet = NumberConfinerofBullet;
+        NotifyAmmoChanged();
     }
-    else
+
+    private void NotifyAmmoChanged()
     {
-        CurrentBullet--;
-        
-     if (Bullet != null && BulletParticle != null)
-         {
-            DestroyableBullet = Instantiate(Bullet, FirePoint.position, FirePoint.rotation);
-            BulletParticle.Play();
-            
-         }
-        
-        else
-         {
-               Debug.LogError("Bullet veya BulletEffect değişkeni atanmamiş Left!");
-         }   
-        
-        Rigidbody2D rb = DestroyableBullet.GetComponent<Rigidbody2D>();
-        rb.AddForce(Vector2.left * BulletForcing, ForceMode2D.Impulse);
-
-        Destroy(DestroyableBullet, 4f);
-        
+        AmmoChanged?.Invoke(CurrentBullet, NumberConfinerofBullet);
     }
-
-}
-
 }
