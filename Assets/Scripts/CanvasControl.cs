@@ -108,7 +108,7 @@ public class CanvasControl : MonoBehaviour
 
     private void Update()
     {
-       FillHealth();
+       SyncHealthUI();
        DecreaseBullet(characterAttack.CurrentBullet);
        
        CanvasTimer();
@@ -200,81 +200,39 @@ public class CanvasControl : MonoBehaviour
 
     public void IncreaseHealth()
     {
-       
-
-
-        if (eatingFruits.isEating && Star1.fillAmount == 0 && Star2.fillAmount != 0 && Star3.fillAmount != 0) 
+        if (eatingFruits.isEating)
         {
-            Star1.fillAmount = 1;
-        
+            playerHealth.Heal();
+            SyncHealthUI();
         }
-
-        else if(eatingFruits.isEating && Star1.fillAmount == 0 && Star2.fillAmount == 0 && Star3.fillAmount != 0)
-        {
-            Star2.fillAmount = 1;
-        }
-        
-        else if(eatingFruits.isEating && Star1.fillAmount == 0 && Star2.fillAmount == 0 && Star3.fillAmount == 0)
-        {
-
-           Star3.fillAmount = 1;
-        }
-
-        else
-        {
-            return;
-        }
-
-        
     }
 
     public void FillHealth()
     {
-        
+        if (scenesManager.isRespawn)
+        {
+            playerHealth.ResetHealth();
+        }
 
-         if(scenesManager.isRespawn)
-         {
-            Star1.fillAmount = 1;
-            Star2.fillAmount = 1;
-            Star3.fillAmount = 1;
-
-         }
-
+        SyncHealthUI();
     }
-public void TakingDamage()
-{
-  
-         if (Star1.fillAmount == 1 && Star2.fillAmount == 1 && Star3.fillAmount == 1 )
-         {
-          
-             Star1.fillAmount = 0;
-         
-         }
-       
-       
-        else if (Star1.fillAmount == 0 && Star2.fillAmount == 1 && Star3.fillAmount == 1 )
-          { 
-          
-            Star2.fillAmount = 0;
-         
-          }
-        
-         
-        else if (Star1.fillAmount == 0 && Star2.fillAmount == 0 && Star3.fillAmount == 1 )
-         {   
-             Star3.fillAmount = 0;
-         }
 
+    public void TakingDamage()
+    {
+        SyncHealthUI();
+    }
 
-         else
-         {
+    private void SyncHealthUI()
+    {
+        if (playerHealth == null)
+        {
             return;
-         }
-   
-   
-}
+        }
 
-
+        Star1.fillAmount = playerHealth.currenthealth >= 3 ? 1f : 0f;
+        Star2.fillAmount = playerHealth.currenthealth >= 2 ? 1f : 0f;
+        Star3.fillAmount = playerHealth.currenthealth >= 1 ? 1f : 0f;
+    }
 
     public void DieImmediate()
     {
