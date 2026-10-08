@@ -29,6 +29,10 @@ ASSETS = [
     "Assets/BigManJD/Platformer Tileset - Pixelart Grasslands/Prefabs/WoodenSign.prefab",
     "Assets/Scripts/Production/Audio/EllenAmbienceVolume.cs",
     "Assets/Scripts/Production/Audio/EllenAmbienceVolume.cs.meta",
+    "Assets/Scripts/Production/Player/EllenGameplayInput.cs",
+    "Assets/Scripts/Production/Player/EllenGameplayInput.cs.meta",
+    "Assets/Scripts/Production/Player/EllenFallRecovery.cs",
+    "Assets/Scripts/Production/Player/EllenFallRecovery.cs.meta",
     "Assets/Editor/EllenProductionSceneInstaller.cs",
     "Assets/Editor/EllenProductionLevelDesigner.cs",
     "Assets/Editor/EllenLevelArtBuilder.cs",
@@ -81,6 +85,75 @@ if campaign_path.exists():
                   "EllenLevelArtBuilder.Build(", "EllenProductionSceneInstaller.UpgradeBuildScenes()"):
         if token not in source:
             errors.append(f"Campaign builder missing feature: {token}")
+
+# These checks catch disconnected runtime polish during subsequent scene work.
+# They are wiring/source checks, NOT substitutes for Unity Play Mode tests.
+required_wiring = {
+    "Assets/Editor/EllenProductionSceneInstaller.cs": (
+        "EnsureComponent<EllenGameplayInput>(player)",
+        "EnsureComponent<EllenFallRecovery>(player)",
+    ),
+    "Assets/Editor/EllenCampaignContentBuilder.cs": (
+        "ExpectComponent<EllenGameplayInput>(scene)",
+        "ExpectComponent<EllenFallRecovery>(scene)",
+    ),
+    "Assets/Scripts/Production/Progression/ProgressionSave.cs": (
+        "ResetForNewJourney()", "musicVolume = current.musicVolume",
+        "sfxVolume = current.sfxVolume", "data.campaignCompleted = true",
+    ),
+    "Assets/Scripts/StartScene.cs": ("ProgressionSave.ResetForNewJourney()",),
+    "Assets/Scripts/Production/Player/EllenGameplayInput.cs": (
+        "TryDash()", "TryWallJump()", "TryToggleSpirit()",
+        "AttackStart()", "PauseRequested()", "OnPressUp_W()",
+    ),
+    "Assets/Scripts/Production/Player/EllenFallRecovery.cs": (
+        "deathPlaneY = -85f", "health.Kill()",
+    ),
+    "Assets/Scripts/Production/Spirit/SpiritGate.cs": (
+        "SolidifyWhenPlayerLeaves()", "PlayerInsideOriginalBounds()",
+        "blockingCollider.enabled = false",
+    ),
+    "Assets/Scripts/Production/Boss/BossAttackPattern.cs": (
+        "warningTint", "telegraphDuration", "recoveryDuration",
+    ),
+    "Assets/Scripts/PlayerMovement.cs": ("ResetForRespawn()",),
+    "Assets/Scripts/Production/Player/PlayerRespawnController.cs": (
+        "ResetForRespawn()",
+    ),
+    "Assets/Scripts/CanvasControl.cs": (
+        "waitingForRespawn", "CurrentTime = Mathf.Max(1, TotalTime)",
+    ),
+}
+for path, tokens in required_wiring.items():
+    file = ROOT / path
+    if not file.is_file():
+        errors.append(f"Missing gameplay script: {path}")
+        continue
+    source = file.read_text(encoding="utf-8")
+    for token in tokens:
+        if token not in source:
+            errors.append(f"Disconnected gameplay wiring: {path}: {token}")
+
+# Prevent new scripts from accidentally aliasing existing .meta identifiers.
+new_metas = [
+    ROOT / "Assets/Editor/EllenCampaignContentBuilder.cs.meta",
+    ROOT / "Assets/Editor/EllenLevelArtBuilder.cs.meta",
+    ROOT / "Assets/Scripts/Production/Audio/EllenAmbienceVolume.cs.meta",
+    ROOT / "Assets/Scripts/Production/Player/EllenGameplayInput.cs.meta",
+    ROOT / "Assets/Scripts/Production/Player/EllenFallRecovery.cs.meta",
+]
+new_guids = {}
+for meta in new_metas:
+    if not meta.is_file():
+        errors.append(f"Missing Unity GUID metadata: {meta}")
+        continue
+    match = re.search(r"(?m)^guid: ([0-9a-f]{32})$", meta.read_text())
+    if not match:
+        errors.append(f"Invalid Unity GUID metadata: {meta}")
+    elif match.group(1) in new_guids:
+        errors.append(f"Duplicate newly created GUID: {meta} and {new_guids[match.group(1)]}")
+    else:
+        new_guids[match.group(1)] = meta
 
 if errors:
     print("Ellen content asset preflight FAILED:")
