@@ -14,6 +14,9 @@ public class PlayerAbilityController : MonoBehaviour
 
     private void Awake()
     {
+        if (advancedMovement == null) advancedMovement = GetComponent<PlayerAdvancedMovement>();
+        if (spiritWorld == null) spiritWorld = FindObjectOfType<SpiritWorldController>();
+
         ProgressionSave.Data data = ProgressionSave.Load();
         unlocked |= (Ability)data.unlockedAbilities;
     }
