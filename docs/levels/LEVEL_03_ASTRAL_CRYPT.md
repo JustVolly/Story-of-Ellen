@@ -21,6 +21,22 @@ The palette uses imported Graveyard parallax, crypt stone and cyan spectral high
 Requirements: collect **2 of 3 memories**, no required secret, no boss requirement. Two
 Spirit Wells, two checkpoints, two wall-jump shafts. Levels 1–2 remain unaffected.
 
+## Chapter presentation: guided discovery
+
+Seven contextual, one-shot storytelling triggers are placed along the existing
+corridor: Entry (-20), First Ascent (115), Secret Balcony (246), Spirit Well
+(272), Dash Trial (425), Final Ascent (548), and Last Gate (681).
+
+Each trigger shows a concise instruction in a non-interactive screen-space
+banner. Fade animations use unscaled time so pause and hit-stop do not leave a
+stuck banner. All generated HUD objects and triggers live below `[LevelDesign]`;
+a rebuild removes and recreates them without touching the existing mobile HUD.
+
+The visual route uses seven cool-blue pulsing crypt beacons built from the
+project's altar sprite, not fabricated placeholder assets. They live under
+`[ProductionArt]`, have no colliders, and are replaced when the art layer is
+rebuilt. The scripted pulsing uses one cached SpriteRenderer per beacon.
+
 ## What changes in the repository
 
 - `EllenProductionLevelDesigner` now generates 44 authored one-way crypt ledges
@@ -29,6 +45,9 @@ Spirit Wells, two checkpoints, two wall-jump shafts. Levels 1–2 remain unaffec
   `BoxCollider2D`, and `PlatformEffector2D`.
 - `EllenLevelThreeBuilder.BuildLevelThree()` upgrades, rebuilds, validates and **saves
   only** `Assets/Scenes/ThreeScene.unity`.
+- `EllenCryptGuidancePresenter`, `EllenCryptGuidanceCue` and
+  `EllenCryptBeaconPulse` add seven guided story cues and seven animated,
+  no-collision environment beacons. The Level 3 validator verifies wiring.
 - Legacy scene geometry, original prefabs, OneScene, and TwoScene are not
   overwritten by the Level 3-only workflow.
 
@@ -54,17 +73,21 @@ and Play Mode inspection.
 ## Playtest gate
 
 1. Check entry spawn and HUD. Walk to first shrine.
-2. Climb each shaft via touch, keyboard or gamepad; verify platform
+2. Walk through the seven story cue locations. Confirm that the banner
+   fades after a few seconds, never blocks touch input, and shows each cue
+   once per level run. Confirm each blue beacon pulses gently, with no
+   new solid collider.
+3. Climb each shaft via touch, keyboard or gamepad; verify platform
    effector one-way collision and recovery from a missed jump.
-3. Collect first memory at shaft summit, then find upper balcony secret.
-4. Reach Spirit Well, shift into Spirit World, open the Spirit seal and
+4. Collect first memory at shaft summit, then find upper balcony secret.
+5. Reach Spirit Well, shift into Spirit World, open the Spirit seal and
    pass the gate before energy depletes.
-5. Dash through the dash seal and breakable barrier.
-6. Reach final shrine and well; climb second shaft, collect optional third
+6. Dash through the dash seal and breakable barrier.
+7. Reach final shrine and well; climb second shaft, collect optional third
    memory and descend via the authored landings.
-7. Confirm the final gate stays closed with fewer than two memories,
+8. Confirm the final gate stays closed with fewer than two memories,
    opens after two, and the result screen persists campaign progress.
-8. Inspect camera boundaries, enemy hitboxes, 60fps performance, touch
+9. Inspect camera boundaries, enemy hitboxes, 60fps performance, touch
    controls and missing-prefab warnings.
 
 ## Known external issue

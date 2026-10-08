@@ -283,6 +283,7 @@ public static class EllenLevelArtBuilder
             AddMonument(root, pillar, new Vector2(120f, -4f), 13f, palette.Accent);
             AddMonument(root, pillar, new Vector2(580f, -4f), 13f, palette.Accent);
             AddMonument(root, altar, new Vector2(698f, -35f), 8f, palette.Accent);
+            BuildCryptRouteBeacons(root, altar);
         }
         else if (sceneName == "TwoScene")
         {
@@ -293,6 +294,38 @@ public static class EllenLevelArtBuilder
         {
             AddMonument(root, altar, new Vector2(700f, -37f), 7f, palette.Accent);
         }
+    }
+
+
+    // Seven authored spectral beacons guide the player's eye across the
+    // entire 760-unit Level 3 corridor without adding physical colliders.
+    // They reuse the checked-in altar sprite and sit within [ProductionArt].
+    private static void BuildCryptRouteBeacons(Transform parent, Sprite altar)
+    {
+        AddCryptBeacon(parent, altar, "Entry", -20f, -38f, 3.2f, 0.1f);
+        AddCryptBeacon(parent, altar, "FirstAscent", 115f, -34f, 4.2f, 1.2f);
+        AddCryptBeacon(parent, altar, "Balcony", 246f, -20f, 3.7f, 2.1f);
+        AddCryptBeacon(parent, altar, "Spirit", 274f, -38f, 4.2f, 0.8f);
+        AddCryptBeacon(parent, altar, "Dash", 425f, -38f, 4f, 1.8f);
+        AddCryptBeacon(parent, altar, "FinalAscent", 550f, -38f, 4.5f, 2.7f);
+        AddCryptBeacon(parent, altar, "LastGate", 680f, -38f, 4.3f, 0.4f);
+    }
+
+    private static void AddCryptBeacon(
+        Transform parent, Sprite sprite, string name,
+        float x, float y, float height, float phase)
+    {
+        Vector3 position = new Vector3(x, y, 0f);
+        GameObject glow = SpriteObject(parent, "AstralBeacon_" + name,
+            sprite, position, 15, new Color(0.27f, 0.9f, 1f, 0.16f));
+        ScaleToHeight(glow.transform, sprite, height * 1.3f);
+
+        EllenCryptBeaconPulse pulse = glow.AddComponent<EllenCryptBeaconPulse>();
+        pulse.SetPhase(phase);
+
+        GameObject core = SpriteObject(parent, "AstralBeaconCore_" + name,
+            sprite, position, 18, new Color(0.65f, 0.85f, 1f, 0.76f));
+        ScaleToHeight(core.transform, sprite, height);
     }
 
     private static void AddMonument(Transform root, Sprite sprite,

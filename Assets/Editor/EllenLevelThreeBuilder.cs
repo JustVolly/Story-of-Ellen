@@ -113,6 +113,10 @@ public static class EllenLevelThreeBuilder
         errors += RequireObject(scene, "[LevelDesign]");
         errors += RequireObject(scene, EllenLevelArtBuilder.RootName);
         errors += RequireObject(scene, "AstralCrypt_TraversalRoutes");
+        errors += RequireObject(scene, "AstralCrypt_GuidanceCanvas");
+        errors += RequireObject(scene, "AstralBeacon_LastGate");
+        errors += RequireCount<EllenCryptGuidanceCue>(scene, 7);
+        errors += RequireCount<EllenCryptBeaconPulse>(scene, 7);
         errors += RequireObject(scene, "WallJumpShaft_01");
         errors += RequireObject(scene, "WallJumpShaft_02");
         errors += RequireObject(scene, "Secret_SpiritBalcony");
@@ -135,12 +139,46 @@ public static class EllenLevelThreeBuilder
         errors += RequireCount<MemoryFragment>(scene, 3);
         errors += RequireCount<AbilitySeal>(scene, 2);
 
+        // Narrative hints must be usable and must never intercept mobile UI.
+        EllenCryptGuidancePresenter guidance =
+            First<EllenCryptGuidancePresenter>(scene);
+        if (guidance == null || !guidance.IsConfigured)
+        {
+            Debug.LogError("[Ellen Level 3] Guidance panel is missing references.");
+            errors++;
+        }
+        foreach (GameObject sceneRoot in scene.GetRootGameObjects())
+        foreach (EllenCryptGuidanceCue cue in
+            sceneRoot.GetComponentsInChildren<EllenCryptGuidanceCue>(true))
+        {
+            BoxCollider2D trigger = cue.GetComponent<BoxCollider2D>();
+            if (!cue.IsConfigured || trigger == null || !trigger.isTrigger)
+            {
+                Debug.LogError("[Ellen Level 3] Misconfigured guidance cue: " + cue.name);
+                errors++;
+            }
+        }
+
         LevelFlowController flow = First<LevelFlowController>(scene);
         if (flow != null && (flow.LevelNumber != 3 || flow.RequiredMemories != 2
             || flow.RequiredSecrets != 0 || flow.RequiresBossDefeat))
         {
             Debug.LogError("[Ellen Level 3] Incorrect mastery progression requirements.");
             errors++;
+        }
+
+        // Beacon lights are decorative only. Any collider here would create
+        // an invisible obstacle on the original authored traversal corridor.
+        foreach (GameObject sceneRoot in scene.GetRootGameObjects())
+        foreach (EllenCryptBeaconPulse beacon in
+            sceneRoot.GetComponentsInChildren<EllenCryptBeaconPulse>(true))
+        {
+            if (beacon.GetComponent<Collider2D>() != null)
+            {
+                Debug.LogError("[Ellen Level 3] Beacon has unintended collision: "
+                    + beacon.name);
+                errors++;
+            }
         }
 
         GameObject route = Find(scene, "AstralCrypt_TraversalRoutes");

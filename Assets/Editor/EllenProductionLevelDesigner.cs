@@ -162,6 +162,7 @@ public static class EllenProductionLevelDesigner
         // The legacy map remains untouched. These authored stone steps make the
         // two 40-unit shafts climbable and provide an optional elevated memory route.
         CreateSpiritAscentTraversal(root.transform);
+        CreateCryptGuidance(root.transform);
 
         CreateShrine(root.transform, "Shrine_01", new Vector2(72f, -39f));
         CreateWallJumpShaft(root.transform, "WallJumpShaft_01", 126f, -24f, 12f, 40f);
@@ -285,6 +286,96 @@ public static class EllenProductionLevelDesigner
                 "[Ellen Level 3] Crypt stone sprite has invalid bounds.");
         face.transform.localScale = new Vector3(
             size.x / naturalSize.x, size.y / naturalSize.y, 1f);
+    }
+
+
+    // Author a single independent Canvas inside [LevelDesign]. Rebuilding the
+    // generated level therefore removes the old presentation and every cue.
+    // Existing HUD, mobile buttons, legacy scenery and campaign scenes are
+    // never modified by this feature.
+    private static void CreateCryptGuidance(Transform parent)
+    {
+        GameObject canvasObject = new GameObject(
+            "AstralCrypt_GuidanceCanvas",
+            typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        canvasObject.transform.SetParent(parent, false);
+        Canvas canvas = canvasObject.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 60;
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 0.5f;
+
+        GameObject panelObject = CreateUiImage("GuidancePanel",
+            canvasObject.transform, new Color(0.018f, 0.04f, 0.075f, 0.9f));
+        RectTransform panelRect = panelObject.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 1f);
+        panelRect.anchorMax = new Vector2(0.5f, 1f);
+        panelRect.pivot = new Vector2(0.5f, 1f);
+        panelRect.anchoredPosition = new Vector2(0f, -85f);
+        panelRect.sizeDelta = new Vector2(990f, 82f);
+
+        CanvasGroup group = panelObject.AddComponent<CanvasGroup>();
+        group.alpha = 0f;
+        group.interactable = false;
+        group.blocksRaycasts = false;
+
+        GameObject textObject = CreateUiText("GuidanceText",
+            panelObject.transform, "", 27f);
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(20f, 10f);
+        textRect.offsetMax = new Vector2(-20f, -10f);
+        TextMeshProUGUI message = textObject.GetComponent<TextMeshProUGUI>();
+        message.color = new Color(0.78f, 0.94f, 1f, 1f);
+
+        EllenCryptGuidancePresenter presenter =
+            panelObject.AddComponent<EllenCryptGuidancePresenter>();
+        SerializedObject so = new SerializedObject(presenter);
+        so.FindProperty("panel").objectReferenceValue = group;
+        so.FindProperty("message").objectReferenceValue = message;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        CreateCryptCue(parent, presenter, "CryptCue_Opening",
+            new Vector2(-20f, -37f),
+            "ASTRAL CRYPT  /  The forgotten path awakens.");
+        CreateCryptCue(parent, presenter, "CryptCue_WallJump",
+            new Vector2(115f, -37f),
+            "ASCEND  /  Wall-jump between the stone landings.");
+        CreateCryptCue(parent, presenter, "CryptCue_Balcony",
+            new Vector2(246f, -20f),
+            "SECRET BALCONY  /  Echoes reward the curious.");
+        CreateCryptCue(parent, presenter, "CryptCue_Spirit",
+            new Vector2(272f, -37f),
+            "SPIRIT  /  Recharge at the well, then cross the blue seal.");
+        CreateCryptCue(parent, presenter, "CryptCue_Dash",
+            new Vector2(425f, -37f),
+            "DASH  /  Break the amber seal while dashing.");
+        CreateCryptCue(parent, presenter, "CryptCue_FinalAscent",
+            new Vector2(548f, -37f),
+            "FINAL ASCENT  /  The last memory rests above.");
+        CreateCryptCue(parent, presenter, "CryptCue_Exit",
+            new Vector2(681f, -37f),
+            "THE LAST GATE  /  Recover two memories to continue.");
+    }
+
+    private static void CreateCryptCue(
+        Transform parent, EllenCryptGuidancePresenter presenter,
+        string name, Vector2 position, string message)
+    {
+        GameObject cue = CreateWorldObject(name, parent, position);
+        BoxCollider2D trigger = cue.AddComponent<BoxCollider2D>();
+        trigger.isTrigger = true;
+        trigger.size = new Vector2(8f, 11f);
+
+        EllenCryptGuidanceCue cueComponent =
+            cue.AddComponent<EllenCryptGuidanceCue>();
+        SerializedObject so = new SerializedObject(cueComponent);
+        so.FindProperty("presenter").objectReferenceValue = presenter;
+        so.FindProperty("message").stringValue = message;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void ConfigureFlow(
