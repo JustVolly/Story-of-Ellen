@@ -62,6 +62,34 @@ def main() -> None:
         if one != 1 or two != 1:
             raise RuntimeError("Cannot update sprite geometry for " + name)
 
+        # Ground Tilemap is on sorting layer index 6; Default is behind it.
+        replacement = re.sub(r"^  m_SortingLayerID: -?\d+$",
+                             "  m_SortingLayerID: -2062554445",
+                             replacement, count=1, flags=re.M)
+        replacement = re.sub(r"^  m_SortingLayer: -?\d+$",
+                             "  m_SortingLayer: 6",
+                             replacement, count=1, flags=re.M)
+
+        # Ground's actual Terrain Sliced (16x16) green/brown tile atlas.
+        if ("Obstacle" in name or "Barricade" in name or
+                "Platform" in name or "SkySteps" in name or "EchoLift" in name):
+            terrain = "fc584d329b77b9545b9c9c8bb829e553"
+            dirt = "Obstacle" in name or "Barricade" in name
+            sprite = "8704577166008928185" if dirt else "-7517053698926566003"
+            replacement = re.sub(r"^  m_Sprite: \{[^}]+\}$",
+                f"  m_Sprite: {{fileID: {sprite}, guid: {terrain}, type: 3}}",
+                replacement, count=1, flags=re.M)
+            replacement = re.sub(r"^  m_DrawMode: \d+$", "  m_DrawMode: 2",
+                                 replacement, count=1, flags=re.M)
+            replacement = re.sub(r"^  m_Color: \{[^}]+\}$",
+                                 "  m_Color: {r: 1, g: 1, b: 1, a: 1}",
+                                 replacement, count=1, flags=re.M)
+        elif "Hazard" in name or "RuneTrap" in name:
+            # Project sprite already used by Assets/Animation/spikes.asset.
+            replacement = re.sub(r"^  m_Sprite: \{[^}]+\}$",
+                "  m_Sprite: {fileID: 21300000, guid: 0049772a1acaf4a49b69bb504ffe2669, type: 3}",
+                replacement, count=1, flags=re.M)
+
         group = group[:renderer.start()] + replacement + group[renderer.end():]
         rebuilt.append(group)
         count += 1
