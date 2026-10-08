@@ -77,6 +77,14 @@ public class PlayerHealth : MonoBehaviour
         TakeDamage();
     }
 
+    public void Kill()
+    {
+        if (!isAlive) return;
+        currenthealth = 0;
+        HealthChanged?.Invoke(currenthealth, maxHealth);
+        ApplyDeath();
+    }
+
     public void Heal(int amount = 1)
     {
         if (!isAlive || amount <= 0)
