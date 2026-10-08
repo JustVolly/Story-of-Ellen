@@ -22,6 +22,17 @@ public class PlayerBulletDamage : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other) 
 {
+    // New production enemies (including the Guardian) use EnemyHealth,
+    // even when their sprite/collider lives on a child tagged Untagged
+    // or on a legacy Snail prefab. Resolve that hierarchy first.
+    EnemyHealth productionHealth = other.GetComponentInParent<EnemyHealth>();
+    if (productionHealth != null)
+    {
+        productionHealth.TakeDamage(1);
+        Destroy(gameObject);
+        return;
+    }
+
     if (other.CompareTag("Enemy"))
     {
          EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
