@@ -77,6 +77,8 @@ public static class EllenVerticalSliceValidator
         errors += Require<SpiritWorldController>();
         errors += Require<LevelFlowController>();
         errors += Require<LevelEntryConfigurator>();
+        errors += Require<LevelResultRecorder>();
+        errors += Require<LevelResultPresenter>();
         errors += Require<SpiritWorldPresentation>();
         errors += Require<HitStop>();
         errors += Require<AudioManager>();
@@ -86,9 +88,32 @@ public static class EllenVerticalSliceValidator
         errors += RequireNamedObject("ObjectiveHUD");
         errors += RequireNamedObject("AbilityToast");
         errors += RequireNamedObject("SpiritTutorialToast");
+        errors += RequireNamedObject("ResultHUD");
+        errors += RequireNamedObject("LevelResultPanel");
+        errors += RequireNamedObject("[LevelDesign]");
 
-        if (SceneManager.GetActiveScene().name == "TwoScene")
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName == "OneScene")
+        {
+            errors += RequireCount<MemoryFragment>(3, "MemoryFragment");
+            errors += RequireCount<SpiritShrine>(2, "SpiritShrine");
+            errors += RequireCount<SpiritGate>(2, "SpiritGate");
+            errors += RequireCount<ObjectiveBarrier>(1, "ObjectiveBarrier");
+            errors += RequireCount<LevelCompletionTrigger>(1, "LevelCompletionTrigger");
+        }
+
+        if (sceneName == "TwoScene")
+        {
             errors += RequireNamedObject("Dash");
+            errors += RequireNamedObject("SpiritGuardian");
+            errors += RequireNamedObject("BossHUD");
+            errors += RequireCount<MemoryFragment>(3, "MemoryFragment");
+            errors += RequireCount<SpiritShrine>(2, "SpiritShrine");
+            errors += RequireCount<DashBreakableBarrier>(2, "DashBreakableBarrier");
+            errors += RequireCount<BossController>(1, "BossController");
+            errors += RequireCount<BossArenaController>(1, "BossArenaController");
+            errors += RequireCount<LevelCompletionTrigger>(1, "LevelCompletionTrigger");
+        }
 
         Canvas canvas = FindFirstInScene<Canvas>();
         if (canvas == null)
@@ -170,6 +195,15 @@ public static class EllenVerticalSliceValidator
         if (FindNamedObject(objectName) != null) return 0;
 
         Debug.LogError("[Ellen Production] Missing required scene object: " + objectName);
+        return 1;
+    }
+
+    private static int RequireCount<T>(int minimum, string label) where T : Component
+    {
+        int count = Count<T>();
+        if (count >= minimum) return 0;
+
+        Debug.LogError($"[Ellen Production] {label} count is {count}; expected at least {minimum}.");
         return 1;
     }
 
