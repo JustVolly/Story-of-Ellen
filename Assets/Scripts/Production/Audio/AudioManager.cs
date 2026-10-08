@@ -11,6 +11,10 @@ public class AudioManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        ProgressionSave.Data data = ProgressionSave.Load();
+        SetMusicVolume(data.musicVolume);
+        SetSfxVolume(data.sfxVolume);
     }
 
     public void PlayMusic(AudioClip clip)
