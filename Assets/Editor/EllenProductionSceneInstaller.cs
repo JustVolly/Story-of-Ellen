@@ -109,6 +109,8 @@ public static class EllenProductionSceneInstaller
                 button.onClick = new Button.ButtonClickedEvent();
                 UnityEventTools.AddPersistentListener(button.onClick, startScene.StartFromBeginning);
             }
+
+            newJourney.SetActive(false);
         }
 
         if (settingsButton == null && quit != null)
@@ -242,6 +244,8 @@ public static class EllenProductionSceneInstaller
             sfxSlider.onValueChanged = new Slider.SliderEvent();
             UnityEventTools.AddPersistentListener(musicSlider.onValueChanged, controller.SetMusicVolume);
             UnityEventTools.AddPersistentListener(sfxSlider.onValueChanged, controller.SetSfxVolume);
+
+            panel.SetActive(false);
         }
         else
         {
