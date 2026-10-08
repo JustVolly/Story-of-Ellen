@@ -33,6 +33,7 @@ public class PlayerHealth : MonoBehaviour
         playerRigid = GetComponent<Rigidbody2D>();
         playerBoxCollider = GetComponent<BoxCollider2D>();
         playerCapsuleCollider = GetComponent<CapsuleCollider2D>();
+        if (CompositeCollider == null) CompositeCollider = GetComponent<CompositeCollider2D>();
         playerMovement = GetComponent<PlayerMovement>();
         if (playerRigid != null) initialGravityScale = playerRigid.gravityScale;
         if (playerBoxCollider != null) initialBoxTrigger = playerBoxCollider.isTrigger;
